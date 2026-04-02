@@ -1,0 +1,403 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// ПОЛЬЗОВАТЕЛИ И АВТОРИЗАЦИЯ
+// ============================================================
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         UserRole @default(CONTENT_EDITOR)
+  isActive     Boolean  @default(true)
+  avatar       String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  assignedLeads  Lead[]              @relation("AssignedLeads")
+  leadComments   LeadComment[]
+  activityLogs   ActivityLog[]
+  statusChanges  LeadStatusHistory[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  SUPERADMIN
+  ADMIN
+  MANAGER
+  CONTENT_EDITOR
+}
+
+// ============================================================
+// НАСТРОЙКИ САЙТА
+// ============================================================
+
+model SiteSettings {
+  id              String   @id @default(cuid())
+  siteName        String   @default("Дербентская пивоварня")
+  siteTagline     String?
+  logoUrl         String?
+  faviconUrl      String?
+  phone           String?
+  phoneSecond     String?
+  email           String?
+  address         String?
+  addressMap      String?
+  workingHours    String?
+  socialVk        String?
+  socialTelegram  String?
+  socialYoutube   String?
+  socialInstagram String?
+  socialWhatsapp  String?
+  footerText      String?
+  metrikaId       String?
+  updatedAt       DateTime @updatedAt
+
+  @@map("site_settings")
+}
+
+model SeoSettings {
+  id            String   @id @default(cuid())
+  page          String   @unique
+  title         String?
+  description   String?
+  keywords      String?
+  ogTitle       String?
+  ogDescription String?
+  ogImageUrl    String?
+  noindex       Boolean  @default(false)
+  updatedAt     DateTime @updatedAt
+
+  @@map("seo_settings")
+}
+
+// ============================================================
+// ГЛАВНАЯ СТРАНИЦА
+// ============================================================
+
+model HeroSlide {
+  id               String   @id @default(cuid())
+  title            String
+  subtitle         String?
+  description      String?
+  imageUrl         String
+  videoUrl         String?
+  ctaText          String?
+  ctaUrl           String?
+  ctaSecondaryText String?
+  ctaSecondaryUrl  String?
+  sortOrder        Int      @default(0)
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("hero_slides")
+}
+
+model HomeSection {
+  id        String         @id @default(cuid())
+  key       HomeSectionKey @unique
+  title     String?
+  subtitle  String?
+  isVisible Boolean        @default(true)
+  sortOrder Int            @default(0)
+  settings  Json?
+  updatedAt DateTime       @updatedAt
+
+  @@map("home_sections")
+}
+
+enum HomeSectionKey {
+  HERO
+  ABOUT_BRIEF
+  STATS
+  PRODUCTS
+  TEAM_PERSON
+  NEWS
+  GALLERY
+  PARTNERS
+  CONTACTS_CTA
+}
+
+// ============================================================
+// О КОМПАНИИ
+// ============================================================
+
+model CompanyInfo {
+  id                 String   @id @default(cuid())
+  foundedYear        Int?
+  historyTitle       String?
+  historyText        String   @db.Text
+  historyImageUrl    String?
+  productionTitle    String?
+  productionText     String   @db.Text
+  productionImageUrl String?
+  philosophyTitle    String?
+  philosophyText     String   @db.Text
+  philosophyImageUrl String?
+  stats              Json?
+  updatedAt          DateTime @updatedAt
+
+  @@map("company_info")
+}
+
+// ============================================================
+// КОМАНДА / ТЕХНОЛОГ
+// ============================================================
+
+model TeamPerson {
+  id             String   @id @default(cuid())
+  name           String
+  role           String
+  photoUrl       String?
+  bio            String   @db.Text
+  quote          String?
+  quoteAuthor    String?
+  experience     String?
+  achievements   Json?
+  certifications Json?
+  isVisible      Boolean  @default(true)
+  sortOrder      Int      @default(0)
+  updatedAt      DateTime @updatedAt
+
+  @@map("team_persons")
+}
+
+// ============================================================
+// ПРОДУКЦИЯ
+// ============================================================
+
+model ProductCategory {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?
+  imageUrl    String?
+  sortOrder   Int       @default(0)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  products Product[]
+
+  @@map("product_categories")
+}
+
+model Product {
+  id             String          @id @default(cuid())
+  name           String
+  slug           String          @unique
+  categoryId     String
+  category       ProductCategory @relation(fields: [categoryId], references: [id])
+  description    String          @db.Text
+  imageUrl       String?
+  images         Json?
+  alcoholContent Float?
+  bitterness     Float?
+  density        Float?
+  color          String?
+  volume         String?
+  ingredients    String?         @db.Text
+  isNew          Boolean         @default(false)
+  isPopular      Boolean         @default(false)
+  isSeasonal     Boolean         @default(false)
+  isActive       Boolean         @default(true)
+  sortOrder      Int             @default(0)
+  seoTitle       String?
+  seoDescription String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@map("products")
+}
+
+// ============================================================
+// НОВОСТИ
+// ============================================================
+
+model NewsCategory {
+  id        String        @id @default(cuid())
+  name      String
+  slug      String        @unique
+  sortOrder Int           @default(0)
+  isActive  Boolean       @default(true)
+  createdAt DateTime      @default(now())
+
+  articles NewsArticle[]
+
+  @@map("news_categories")
+}
+
+model NewsArticle {
+  id             String        @id @default(cuid())
+  title          String
+  slug           String        @unique
+  categoryId     String?
+  category       NewsCategory? @relation(fields: [categoryId], references: [id])
+  excerpt        String?
+  content        String        @db.Text
+  coverImageUrl  String?
+  isPublished    Boolean       @default(false)
+  publishedAt    DateTime?
+  seoTitle       String?
+  seoDescription String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@map("news_articles")
+}
+
+// ============================================================
+// ГАЛЕРЕЯ
+// ============================================================
+
+model GalleryCategory {
+  id        String      @id @default(cuid())
+  name      String
+  slug      String      @unique
+  sortOrder Int         @default(0)
+  isActive  Boolean     @default(true)
+
+  items GalleryItem[]
+
+  @@map("gallery_categories")
+}
+
+model GalleryItem {
+  id          String           @id @default(cuid())
+  categoryId  String?
+  category    GalleryCategory? @relation(fields: [categoryId], references: [id])
+  imageUrl    String
+  thumbUrl    String?
+  title       String?
+  description String?
+  sortOrder   Int              @default(0)
+  isActive    Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@map("gallery_items")
+}
+
+// ============================================================
+// CRM — ЗАЯВКИ
+// ============================================================
+
+enum LeadType {
+  COOPERATION
+  DISTRIBUTION
+  WHOLESALE
+  FEEDBACK
+  TOUR
+  OTHER
+}
+
+enum LeadStatus {
+  NEW
+  IN_PROGRESS
+  WAITING
+  CLOSED
+  REJECTED
+}
+
+model Lead {
+  id           String     @id @default(cuid())
+  type         LeadType
+  status       LeadStatus @default(NEW)
+  name         String
+  phone        String?
+  email        String?
+  company      String?
+  message      String?    @db.Text
+  source       String?
+  utmSource    String?
+  utmMedium    String?
+  utmCampaign  String?
+  ipAddress    String?
+  assignedToId String?
+  assignedTo   User?      @relation("AssignedLeads", fields: [assignedToId], references: [id])
+  isRead       Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  comments      LeadComment[]
+  statusHistory LeadStatusHistory[]
+
+  @@map("leads")
+}
+
+model LeadComment {
+  id        String   @id @default(cuid())
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  text      String   @db.Text
+  createdAt DateTime @default(now())
+
+  @@map("lead_comments")
+}
+
+model LeadStatusHistory {
+  id          String     @id @default(cuid())
+  leadId      String
+  lead        Lead       @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  fromStatus  LeadStatus?
+  toStatus    LeadStatus
+  changedById String
+  changedBy   User       @relation(fields: [changedById], references: [id])
+  comment     String?
+  createdAt   DateTime   @default(now())
+
+  @@map("lead_status_history")
+}
+
+// ============================================================
+// МЕДИАФАЙЛЫ
+// ============================================================
+
+model MediaFile {
+  id           String   @id @default(cuid())
+  filename     String
+  originalName String
+  url          String
+  thumbUrl     String?
+  mimeType     String
+  size         Int
+  width        Int?
+  height       Int?
+  folder       String?
+  uploadedById String?
+  createdAt    DateTime @default(now())
+
+  @@map("media_files")
+}
+
+// ============================================================
+// ЛОГИ ДЕЙСТВИЙ
+// ============================================================
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  action    String
+  entity    String
+  entityId  String?
+  details   Json?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([entity, entityId])
+  @@map("activity_logs")
+}
