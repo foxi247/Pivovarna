@@ -13,7 +13,22 @@ interface SettingsFormProps {
 export function SettingsForm({ settings }: SettingsFormProps) {
   const [loading, setLoading] = useState(false)
 
-  const { register, handleSubmit } = useForm({
+  type FormValues = {
+    siteName: string
+    siteTagline: string
+    phone: string
+    phoneSecond: string
+    email: string
+    address: string
+    workingHours: string
+    socialVk: string
+    socialTelegram: string
+    socialInstagram: string
+    socialWhatsapp: string
+    footerText: string
+  }
+
+  const { register, handleSubmit } = useForm<FormValues>({
     defaultValues: {
       siteName: settings?.siteName ?? 'Дербентская пивоварня',
       siteTagline: settings?.siteTagline ?? '',
@@ -30,7 +45,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
     },
   })
 
-  const onSubmit = async (data: Record<string, string>) => {
+  const onSubmit = async (data: FormValues) => {
     setLoading(true)
     try {
       const res = await fetch('/api/admin/settings', {
@@ -47,7 +62,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
     }
   }
 
-  const Field = ({ name, label, placeholder, type = 'text' }: { name: string; label: string; placeholder?: string; type?: string }) => (
+  const Field = ({ name, label, placeholder, type = 'text' }: { name: keyof FormValues; label: string; placeholder?: string; type?: string }) => (
     <div>
       <label className="block text-admin-text text-sm font-medium mb-1.5">{label}</label>
       <input
