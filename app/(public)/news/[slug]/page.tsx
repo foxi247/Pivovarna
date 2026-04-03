@@ -1,16 +1,12 @@
 import { notFound } from 'next/navigation'
-import { getNewsArticleBySlug, getNewsArticles } from '@/lib/services/news.service'
+import { getNewsArticleBySlug } from '@/lib/services/news.service'
 import { formatDate } from '@/lib/utils'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import type { Metadata } from 'next'
 
 export const revalidate = 300
-
-export async function generateStaticParams() {
-  const articles = await getNewsArticles(true)
-  return articles.map((a) => ({ slug: a.slug }))
-}
+export const dynamicParams = true
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const article = await getNewsArticleBySlug(params.slug)

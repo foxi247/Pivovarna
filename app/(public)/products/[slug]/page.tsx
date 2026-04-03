@@ -1,15 +1,11 @@
 import { notFound } from 'next/navigation'
-import { getProductBySlug, getProducts } from '@/lib/services/products.service'
+import { getProductBySlug } from '@/lib/services/products.service'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import type { Metadata } from 'next'
 
 export const revalidate = 300
-
-export async function generateStaticParams() {
-  const products = await getProducts(undefined, true)
-  return products.map((p) => ({ slug: p.slug }))
-}
+export const dynamicParams = true
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const product = await getProductBySlug(params.slug)
