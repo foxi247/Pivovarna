@@ -100,7 +100,7 @@ export async function updateCompanyInfo(data: {
       productionText: '',
       philosophyText: '',
       ...data,
-    },
+    } as any,
   })
 }
 
