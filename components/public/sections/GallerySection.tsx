@@ -1,3 +1,4 @@
+'use client'
 import Link from 'next/link'
 import { AnimatedSection } from '@/components/public/ui/AnimatedSection'
 import { ArrowRight } from 'lucide-react'

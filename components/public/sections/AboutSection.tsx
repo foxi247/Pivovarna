@@ -1,3 +1,4 @@
+'use client'
 import { AnimatedSection, StaggerContainer, staggerItem } from '@/components/public/ui/AnimatedSection'
 import { motion } from 'framer-motion'
 import type { CompanyInfo } from '@prisma/client'

@@ -1,3 +1,4 @@
+'use client'
 import { AnimatedSection } from '@/components/public/ui/AnimatedSection'
 import type { TeamPerson } from '@prisma/client'
 

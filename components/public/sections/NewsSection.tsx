@@ -1,3 +1,4 @@
+'use client'
 import Link from 'next/link'
 import { AnimatedSection, StaggerContainer, staggerItem } from '@/components/public/ui/AnimatedSection'
 import { NewsCard } from '@/components/public/news/NewsCard'

@@ -1,14 +1,7 @@
-import { HeroSection } from '@/components/public/sections/HeroSection'
-import { AboutSection } from '@/components/public/sections/AboutSection'
-import { TeamSection } from '@/components/public/sections/TeamSection'
-import { ProductsSection } from '@/components/public/sections/ProductsSection'
-import { NewsSection } from '@/components/public/sections/NewsSection'
-import { GallerySection } from '@/components/public/sections/GallerySection'
-import { ContactsSection } from '@/components/public/sections/ContactsSection'
-import { getHeroSlides, getCompanyInfo, getTeamPersons, getSiteSettings } from '@/lib/services/settings.service'
+import dynamic from 'next/dynamic'
+import { getHeroSlides, getCompanyInfo, getTeamPersons, getSiteSettings, getGalleryItems } from '@/lib/services/settings.service'
 import { getProducts } from '@/lib/services/products.service'
 import { getNewsArticles } from '@/lib/services/news.service'
-import { getGalleryItems } from '@/lib/services/settings.service'
 import type { Metadata } from 'next'
 
 export const revalidate = 60
@@ -17,6 +10,14 @@ export const metadata: Metadata = {
   title: 'Дербентская пивоварня — Премиальное пиво из Дагестана',
   description: 'Производитель качественного пива в Дербенте. Традиции пивоварения Дагестана, современные технологии. Оптовые поставки, сотрудничество, экскурсии.',
 }
+
+const HeroSection = dynamic(() => import('@/components/public/sections/HeroSection').then(m => ({ default: m.HeroSection })), { ssr: false })
+const AboutSection = dynamic(() => import('@/components/public/sections/AboutSection').then(m => ({ default: m.AboutSection })), { ssr: false })
+const TeamSection = dynamic(() => import('@/components/public/sections/TeamSection').then(m => ({ default: m.TeamSection })), { ssr: false })
+const ProductsSection = dynamic(() => import('@/components/public/sections/ProductsSection').then(m => ({ default: m.ProductsSection })), { ssr: false })
+const NewsSection = dynamic(() => import('@/components/public/sections/NewsSection').then(m => ({ default: m.NewsSection })), { ssr: false })
+const GallerySection = dynamic(() => import('@/components/public/sections/GallerySection').then(m => ({ default: m.GallerySection })), { ssr: false })
+const ContactsSection = dynamic(() => import('@/components/public/sections/ContactsSection').then(m => ({ default: m.ContactsSection })), { ssr: false })
 
 export default async function HomePage() {
   const [heroSlides, companyInfo, teamPersons, products, newsArticles, galleryItems, siteSettings] =

@@ -1,3 +1,4 @@
+'use client'
 import { AnimatedSection } from '@/components/public/ui/AnimatedSection'
 import { ContactForm } from '@/components/public/forms/ContactForm'
 import { MapPin, Phone, Mail, Clock } from 'lucide-react'
