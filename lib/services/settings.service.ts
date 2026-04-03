@@ -88,11 +88,11 @@ export async function updateCompanyInfo(data: {
   philosophyTitle?: string
   philosophyText?: string
   philosophyImageUrl?: string
-  stats?: unknown
+  stats?: Record<string, unknown>
 }) {
   const existing = await prisma.companyInfo.findFirst()
   if (existing) {
-    return prisma.companyInfo.update({ where: { id: existing.id }, data })
+    return prisma.companyInfo.update({ where: { id: existing.id }, data: data as any })
   }
   return prisma.companyInfo.create({
     data: {
