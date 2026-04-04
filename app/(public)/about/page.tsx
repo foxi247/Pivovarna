@@ -15,9 +15,15 @@ export default async function AboutPage() {
     take: 6
   })
 
+  // Подготавливаем "чистый" объект для AboutSection, чтобы избежать ошибок .map()
+  const safeInfo = companyInfo ? {
+    ...companyInfo,
+    stats: Array.isArray(companyInfo.stats) ? companyInfo.stats : []
+  } : null
+
   return (
     <main className="pt-20">
-      <AboutSection info={companyInfo} />
+      <AboutSection info={safeInfo as any} />
       <TeamSection person={mainPerson} />
       <GallerySection items={galleryItems} />
     </main>
