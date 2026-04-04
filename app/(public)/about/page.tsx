@@ -14,8 +14,11 @@ export default async function HomePage() {
   })
   
   const companyInfo = await prisma.companyInfo.findFirst()
+  
+  // Добавляем 'include: { category: true }', чтобы TypeScript не ругался
   const products = await prisma.product.findMany({
     where: { isActive: true },
+    include: { category: true },
     orderBy: { sortOrder: 'asc' },
     take: 8
   })
@@ -45,10 +48,9 @@ export default async function HomePage() {
 
   return (
     <main>
-      {/* Передаем первый слайд, так как компонент ожидает 'slide' */}
       <HeroSection slide={slides[0] || null} />
       <AboutSection info={safeCompanyInfo as any} />
-      <ProductsSection products={products} />
+      <ProductsSection products={products as any} />
       <TeamSection person={mainPerson} />
       <NewsSection articles={news} />
       <GallerySection items={galleryItems} />
