@@ -5,7 +5,7 @@ import { GallerySection } from '@/components/public/sections/GallerySection'
 
 export default async function AboutPage() {
   const companyInfo = await prisma.companyInfo.findFirst()
-  const team = await prisma.teamPerson.findMany({
+  const mainPerson = await prisma.teamPerson.findFirst({
     where: { isVisible: true },
     orderBy: { sortOrder: 'asc' }
   })
@@ -13,7 +13,7 @@ export default async function AboutPage() {
   return (
     <main className="pt-20">
       <AboutSection info={companyInfo} />
-      <TeamSection team={team} />
+      <TeamSection person={mainPerson} />
       <GallerySection />
     </main>
   )
