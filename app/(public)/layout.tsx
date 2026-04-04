@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/db'
-import Header from '@/components/public/layout/Header'
-import Footer from '@/components/public/layout/Footer'
+import { Header } from '@/components/public/layout/Header'
+import { Footer } from '@/components/public/layout/Footer'
 
 export default async function PublicLayout({
   children,
