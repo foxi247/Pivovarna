@@ -45,7 +45,8 @@ export default async function HomePage() {
 
   return (
     <main>
-      <HeroSection slides={slides} />
+      {/* Передаем первый слайд, так как компонент ожидает 'slide' */}
+      <HeroSection slide={slides[0] || null} />
       <AboutSection info={safeCompanyInfo as any} />
       <ProductsSection products={products} />
       <TeamSection person={mainPerson} />
