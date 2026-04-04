@@ -1,8 +1,8 @@
 import dynamic from 'next/dynamic'
 import { getCompanyInfo, getTeamPersons, getGalleryItems } from '@/lib/services/settings.service'
 
-// Отключаем статический рендеринг для этой страницы, чтобы избежать ошибок при сборке
-export const dynamicRoute = 'force-dynamic'
+// ПРАВИЛЬНАЯ НАСТРОЙКА: заставляем страницу рендериться только при запросе
+export const dynamic = 'force-dynamic'
 
 const AboutSection = dynamic(() => import('@/components/public/sections/AboutSection').then(m => ({ default: m.AboutSection })), { ssr: false })
 const TeamSection = dynamic(() => import('@/components/public/sections/TeamSection').then(m => ({ default: m.TeamSection })), { ssr: false })
