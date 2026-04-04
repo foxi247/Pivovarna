@@ -9,12 +9,17 @@ export default async function AboutPage() {
     where: { isVisible: true },
     orderBy: { sortOrder: 'asc' }
   })
+  const galleryItems = await prisma.galleryItem.findMany({
+    where: { isActive: true },
+    orderBy: { sortOrder: 'asc' },
+    take: 6
+  })
 
   return (
     <main className="pt-20">
       <AboutSection info={companyInfo} />
       <TeamSection person={mainPerson} />
-      <GallerySection />
+      <GallerySection items={galleryItems} />
     </main>
   )
 }
