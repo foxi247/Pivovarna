@@ -1,31 +1,57 @@
 import { prisma } from '@/lib/db'
+import { HeroSection } from '@/components/public/sections/HeroSection'
 import { AboutSection } from '@/components/public/sections/AboutSection'
+import { ProductsSection } from '@/components/public/sections/ProductsSection'
 import { TeamSection } from '@/components/public/sections/TeamSection'
+import { NewsSection } from '@/components/public/sections/NewsSection'
 import { GallerySection } from '@/components/public/sections/GallerySection'
+import { ContactsSection } from '@/components/public/sections/ContactsSection'
 
-export default async function AboutPage() {
+export default async function HomePage() {
+  const slides = await prisma.heroSlide.findMany({
+    where: { isActive: true },
+    orderBy: { sortOrder: 'asc' }
+  })
+  
   const companyInfo = await prisma.companyInfo.findFirst()
+  const products = await prisma.product.findMany({
+    where: { isActive: true },
+    orderBy: { sortOrder: 'asc' },
+    take: 8
+  })
+  
   const mainPerson = await prisma.teamPerson.findFirst({
     where: { isVisible: true },
     orderBy: { sortOrder: 'asc' }
   })
+  
+  const news = await prisma.newsArticle.findMany({
+    where: { isPublished: true },
+    orderBy: { publishedAt: 'desc' },
+    take: 3
+  })
+  
   const galleryItems = await prisma.galleryItem.findMany({
     where: { isActive: true },
     orderBy: { sortOrder: 'asc' },
     take: 6
   })
 
-  // Подготавливаем "чистый" объект для AboutSection, чтобы избежать ошибок .map()
-  const safeInfo = companyInfo ? {
+  // Безопасная подготовка данных
+  const safeCompanyInfo = companyInfo ? {
     ...companyInfo,
     stats: Array.isArray(companyInfo.stats) ? companyInfo.stats : []
   } : null
 
   return (
-    <main className="pt-20">
-      <AboutSection info={safeInfo as any} />
+    <main>
+      <HeroSection slides={slides} />
+      <AboutSection info={safeCompanyInfo as any} />
+      <ProductsSection products={products} />
       <TeamSection person={mainPerson} />
+      <NewsSection articles={news} />
       <GallerySection items={galleryItems} />
+      <ContactsSection />
     </main>
   )
 }
