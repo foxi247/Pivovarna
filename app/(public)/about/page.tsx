@@ -1,8 +1,12 @@
-import { getCompanyInfo, getTeamPersons } from '@/lib/services/settings.service'
-import { AboutSection } from '@/components/public/sections/AboutSection'
-import { TeamSection } from '@/components/public/sections/TeamSection'
-import { GallerySection } from '@/components/public/sections/GallerySection'
-import { getGalleryItems } from '@/lib/services/settings.service'
+import dynamic from 'next/dynamic'
+import { getCompanyInfo, getTeamPersons, getGalleryItems } from '@/lib/services/settings.service'
+
+// Отключаем статический рендеринг для этой страницы, чтобы избежать ошибок при сборке
+export const dynamicRoute = 'force-dynamic'
+
+const AboutSection = dynamic(() => import('@/components/public/sections/AboutSection').then(m => ({ default: m.AboutSection })), { ssr: false })
+const TeamSection = dynamic(() => import('@/components/public/sections/TeamSection').then(m => ({ default: m.TeamSection })), { ssr: false })
+const GallerySection = dynamic(() => import('@/components/public/sections/GallerySection').then(m => ({ default: m.GallerySection })), { ssr: false })
 
 export default async function AboutPage() {
   const [companyInfo, teamPersons, galleryItems] = await Promise.all([
