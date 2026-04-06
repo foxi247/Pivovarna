@@ -16,7 +16,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="ru" className={`<LaTex>${inter.variable} $</LaTex>{playfair.variable}`}>
+    <html lang="ru" className={`${inter.variable} ${playfair.variable}`}>
       <body className="bg-[#0F0D0A] text-[#F5EFE6] antialiased">
         {children}
         <Toaster position="top-right" richColors />
