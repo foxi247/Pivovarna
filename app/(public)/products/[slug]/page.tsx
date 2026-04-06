@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   if (!product) return {}
   return {
     title: product.seoTitle ?? product.name,
-    description: product.seoDescription ?? product.description.slice(0, 160),
+    description: product.seoDescription ?? (product.description ?? '').slice(0, 160),
   }
 }
 

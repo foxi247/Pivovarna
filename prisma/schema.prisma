@@ -197,7 +197,7 @@ model Product {
   name           String
   slug           String          @unique
   categoryId     String
-  category       ProductCategory @relation(fields: [categoryId], references: [id])
+  category       ProductCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   description    String          @db.Text
   imageUrl       String?
   images         Json?
@@ -217,6 +217,8 @@ model Product {
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 
+  @@index([categoryId])
+  @@index([isActive])
   @@map("products")
 }
 
@@ -242,7 +244,7 @@ model NewsArticle {
   title          String
   slug           String        @unique
   categoryId     String?
-  category       NewsCategory? @relation(fields: [categoryId], references: [id])
+  category       NewsCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   excerpt        String?
   content        String        @db.Text
   coverImageUrl  String?
@@ -253,6 +255,7 @@ model NewsArticle {
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
+  @@index([isPublished, publishedAt])
   @@map("news_articles")
 }
 
@@ -275,7 +278,7 @@ model GalleryCategory {
 model GalleryItem {
   id          String           @id @default(cuid())
   categoryId  String?
-  category    GalleryCategory? @relation(fields: [categoryId], references: [id])
+  category    GalleryCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   imageUrl    String
   thumbUrl    String?
   title       String?
@@ -285,6 +288,7 @@ model GalleryItem {
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
 
+  @@index([isActive])
   @@map("gallery_items")
 }
 
@@ -324,7 +328,7 @@ model Lead {
   utmCampaign  String?
   ipAddress    String?
   assignedToId String?
-  assignedTo   User?      @relation("AssignedLeads", fields: [assignedToId], references: [id])
+  assignedTo   User?      @relation("AssignedLeads", fields: [assignedToId], references: [id], onDelete: SetNull)
   isRead       Boolean    @default(false)
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
@@ -332,6 +336,8 @@ model Lead {
   comments      LeadComment[]
   statusHistory LeadStatusHistory[]
 
+  @@index([status])
+  @@index([createdAt])
   @@map("leads")
 }
 

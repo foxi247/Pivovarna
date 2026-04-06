@@ -157,7 +157,7 @@ export default async function LeadsPage({ searchParams }: PageProps) {
             <div className="flex gap-2">
               {page > 1 && (
                 <a
-                  href={`?page=${page - 1}${searchParams.status ? `&status=${searchParams.status}` : ''}`}
+                  href={`?page=${page - 1}${searchParams.status ? `&status=${searchParams.status}` : ''}${searchParams.type ? `&type=${searchParams.type}` : ''}${searchParams.search ? `&search=${encodeURIComponent(searchParams.search)}` : ''}`}
                   className="px-3 py-1.5 border border-admin-border rounded-md text-sm hover:bg-stone-50 transition-colors"
                 >
                   ←
@@ -165,7 +165,7 @@ export default async function LeadsPage({ searchParams }: PageProps) {
               )}
               {page < pages && (
                 <a
-                  href={`?page=${page + 1}${searchParams.status ? `&status=${searchParams.status}` : ''}`}
+                  href={`?page=${page + 1}${searchParams.status ? `&status=${searchParams.status}` : ''}${searchParams.type ? `&type=${searchParams.type}` : ''}${searchParams.search ? `&search=${encodeURIComponent(searchParams.search)}` : ''}`}
                   className="px-3 py-1.5 border border-admin-border rounded-md text-sm hover:bg-stone-50 transition-colors"
                 >
                   →

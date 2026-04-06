@@ -4,6 +4,7 @@ import { formatDate } from '@/lib/utils'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import type { Metadata } from 'next'
+import DOMPurify from 'isomorphic-dompurify'
 
 export const revalidate = 300
 export const dynamicParams = true
@@ -63,7 +64,7 @@ export default async function NewsArticlePage({ params }: { params: { slug: stri
 
         <div
           className="prose prose-invert prose-amber max-w-none text-[#B8A898] leading-relaxed [&_h2]:font-display [&_h2]:text-[#F5EFE6] [&_h3]:text-[#F5EFE6] [&_strong]:text-[#F5EFE6]"
-          dangerouslySetInnerHTML={{ __html: article.content.replace(/\n/g, '<br />') }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(article.content.replace(/\n/g, '<br />')) }}
         />
       </div>
     </div>
