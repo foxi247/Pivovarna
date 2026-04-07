@@ -4,6 +4,7 @@ import { formatDate } from '@/lib/utils'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import type { Metadata } from 'next'
+import { ArticleViewTracker } from '@/components/public/analytics/ArticleViewTracker'
 
 export const revalidate = 300
 export const dynamicParams = true
@@ -24,6 +25,7 @@ export default async function NewsArticlePage({ params }: { params: { slug: stri
 
   return (
     <div className="min-h-screen pt-24 pb-20">
+      <ArticleViewTracker articleId={article.id} />
       <div className="max-w-4xl mx-auto px-6 lg:px-12">
         <Link
           href="/news"

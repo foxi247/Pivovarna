@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { requireAuth } from '@/lib/api-auth'
 import { updateNewsArticle, deleteNewsArticle } from '@/lib/services/news.service'
 import { prisma } from '@/lib/db'
@@ -19,6 +20,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     },
   })
 
+  revalidatePath('/news')
+  revalidatePath(`/news/${params.id}`)
+  revalidatePath('/')
   return NextResponse.json({ success: true, article })
 }
 
@@ -37,5 +41,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     },
   })
 
+  revalidatePath('/news')
+  revalidatePath('/')
   return NextResponse.json({ success: true })
 }

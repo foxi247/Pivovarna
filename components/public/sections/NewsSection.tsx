@@ -1,9 +1,9 @@
 'use client'
 import Link from 'next/link'
-import { AnimatedSection, StaggerContainer, staggerItem } from '@/components/public/ui/AnimatedSection'
+import { AnimatedSection } from '@/components/public/ui/AnimatedSection'
 import { NewsCard } from '@/components/public/news/NewsCard'
 import { ArrowRight } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { useRef } from 'react'
 import type { NewsArticle, NewsCategory } from '@prisma/client'
 
 interface NewsSectionProps {
@@ -11,12 +11,21 @@ interface NewsSectionProps {
 }
 
 export function NewsSection({ articles }: NewsSectionProps) {
+  const scrollRef = useRef<HTMLDivElement>(null)
+
   if (articles.length === 0) return null
 
+  const scroll = (dir: 'left' | 'right') => {
+    const el = scrollRef.current
+    if (!el) return
+    el.scrollBy({ left: dir === 'right' ? 340 : -340, behavior: 'smooth' })
+  }
+
   return (
-    <section id="news" className="py-28 bg-[#1A1712]">
+    <section id="news" className="py-20 bg-[#1A1712]">
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-14">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
           <div>
             <AnimatedSection>
               <span className="text-[#C8873A] text-xs font-semibold tracking-[0.35em] uppercase">
@@ -29,24 +38,50 @@ export function NewsSection({ articles }: NewsSectionProps) {
               </h2>
             </AnimatedSection>
           </div>
+
           <AnimatedSection delay={0.2}>
-            <Link
-              href="/news"
-              className="inline-flex items-center gap-2 text-[#C8873A] hover:text-[#E8A855] text-sm font-semibold transition-colors group"
-            >
-              Все новости
-              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-            </Link>
+            <div className="flex items-center gap-3">
+              {/* Scroll arrows */}
+              <button
+                onClick={() => scroll('left')}
+                className="w-9 h-9 rounded-full border border-[#3D352B] flex items-center justify-center text-[#7A6C5E] hover:border-[#C8873A] hover:text-[#C8873A] transition-colors"
+                aria-label="Назад"
+              >
+                <ArrowRight size={16} className="rotate-180" />
+              </button>
+              <button
+                onClick={() => scroll('right')}
+                className="w-9 h-9 rounded-full border border-[#3D352B] flex items-center justify-center text-[#7A6C5E] hover:border-[#C8873A] hover:text-[#C8873A] transition-colors"
+                aria-label="Вперёд"
+              >
+                <ArrowRight size={16} />
+              </button>
+              <Link
+                href="/news"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#C8873A] hover:bg-[#E8A855] text-[#0F0D0A] text-sm font-semibold rounded-md transition-colors"
+              >
+                Все новости
+                <ArrowRight size={14} />
+              </Link>
+            </div>
           </AnimatedSection>
         </div>
 
-        <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {articles.slice(0, 3).map((article) => (
-            <motion.div key={article.id} variants={staggerItem}>
+        {/* Horizontal scrollable strip */}
+        <div
+          ref={scrollRef}
+          className="flex gap-5 overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {articles.map((article) => (
+            <div
+              key={article.id}
+              className="flex-none w-[300px] sm:w-[340px] snap-start"
+            >
               <NewsCard article={article} />
-            </motion.div>
+            </div>
           ))}
-        </StaggerContainer>
+        </div>
       </div>
     </section>
   )

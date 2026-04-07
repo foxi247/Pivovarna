@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { requireAuth } from '@/lib/api-auth'
 import { createNewsArticle } from '@/lib/services/news.service'
 import { newsArticleSchema } from '@/lib/validations/news'
@@ -14,5 +15,7 @@ export async function POST(req: NextRequest) {
   }
 
   const article = await createNewsArticle(parsed.data)
+  revalidatePath('/news')
+  revalidatePath('/')
   return NextResponse.json({ success: true, article }, { status: 201 })
 }

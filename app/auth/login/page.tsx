@@ -17,9 +17,15 @@ export default function LoginPage() {
           <LoginForm />
         </Suspense>
 
-        <p className="text-center text-admin-text-muted text-xs mt-6">
-          Дербентская пивоварня © {new Date().getFullYear()}
-        </p>
+        <div className="flex items-center justify-center mt-6 gap-4">
+          <a href="/" className="text-admin-text-muted hover:text-admin-text text-xs transition-colors">
+            ← На сайт
+          </a>
+          <span className="text-admin-border text-xs">·</span>
+          <p className="text-admin-text-muted text-xs">
+            Дербентская пивоварня © {new Date().getFullYear()}
+          </p>
+        </div>
       </div>
     </div>
   )

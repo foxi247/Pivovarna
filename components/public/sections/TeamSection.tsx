@@ -9,53 +9,20 @@ interface TeamSectionProps {
 export function TeamSection({ person }: TeamSectionProps) {
   if (!person) return null
 
-  const achievements = (person.achievements as { title: string; year?: string }[] | null) ?? []
+  const achievements = Array.isArray(person.achievements)
+    ? (person.achievements as { title: string; year?: string }[])
+    : []
 
   return (
-    <section id="team" className="py-28 bg-[#1A1712] relative overflow-hidden">
+    <section id="team" className="py-20 bg-[#1A1712] relative overflow-hidden">
       {/* Decorative */}
       <div className="absolute left-0 top-0 w-96 h-full bg-gradient-to-r from-[#C8873A]/5 to-transparent pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
-        <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
-          {/* Photo */}
-          <AnimatedSection direction="right">
-            <div className="relative max-w-md mx-auto lg:mx-0">
-              {/* Background accent */}
-              <div className="absolute -bottom-6 -right-6 w-full h-full bg-[#C8873A]/10 rounded-2xl" />
-              <div className="absolute -bottom-3 -right-3 w-full h-full border border-[#C8873A]/20 rounded-2xl" />
+        <div className="grid lg:grid-cols-2 gap-10 lg:gap-24 items-center">
 
-              <div className="relative rounded-2xl overflow-hidden aspect-[3/4] bg-[#231F1A]">
-                {person.photoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={person.photoUrl}
-                    alt={person.name}
-                    className="w-full h-full object-cover object-top"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <div className="w-24 h-24 rounded-full bg-[#C8873A]/20 flex items-center justify-center">
-                      <span className="text-[#C8873A] text-4xl">👨‍🍳</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Experience badge */}
-              {person.experience && (
-                <div className="absolute top-6 -left-6 bg-[#C8873A] text-[#0F0D0A] rounded-xl px-4 py-3 shadow-lg">
-                  <p className="font-display text-2xl font-bold leading-none">{person.experience.split(' ')[0]}</p>
-                  <p className="text-xs font-semibold mt-0.5 leading-none">
-                    {person.experience.split(' ').slice(1).join(' ')}
-                  </p>
-                </div>
-              )}
-            </div>
-          </AnimatedSection>
-
-          {/* Info */}
-          <div>
+          {/* Info — first on mobile */}
+          <div className="order-1 lg:order-2">
             <AnimatedSection delay={0.1}>
               <span className="text-[#C8873A] text-xs font-semibold tracking-[0.35em] uppercase">
                 Лицо компании
@@ -106,6 +73,44 @@ export function TeamSection({ person }: TeamSectionProps) {
               </AnimatedSection>
             )}
           </div>
+
+          {/* Photo — second on mobile, first on desktop */}
+          <AnimatedSection direction="right" className="order-2 lg:order-1">
+            <div className="relative max-w-sm mx-auto lg:mx-0">
+              {/* Background accent — hidden on mobile to avoid overflow */}
+              <div className="hidden lg:block absolute -bottom-6 -right-6 w-full h-full bg-[#C8873A]/10 rounded-2xl" />
+              <div className="hidden lg:block absolute -bottom-3 -right-3 w-full h-full border border-[#C8873A]/20 rounded-2xl" />
+
+              <div className="relative rounded-2xl overflow-hidden bg-[#231F1A]"
+                   style={{ maxHeight: '70vh', aspectRatio: '3/4' }}>
+                {person.photoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={person.photoUrl}
+                    alt={person.name}
+                    className="w-full h-full object-cover object-top"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <div className="w-24 h-24 rounded-full bg-[#C8873A]/20 flex items-center justify-center">
+                      <span className="text-[#C8873A] text-4xl">👨‍🍳</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Experience badge */}
+              {person.experience && (
+                <div className="absolute top-4 left-4 lg:-left-6 bg-[#C8873A] text-[#0F0D0A] rounded-xl px-4 py-3 shadow-lg">
+                  <p className="font-display text-2xl font-bold leading-none">{person.experience.split(' ')[0]}</p>
+                  <p className="text-xs font-semibold mt-0.5 leading-none">
+                    {person.experience.split(' ').slice(1).join(' ')}
+                  </p>
+                </div>
+              )}
+            </div>
+          </AnimatedSection>
+
         </div>
       </div>
     </section>

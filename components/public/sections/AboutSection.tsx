@@ -15,7 +15,9 @@ const defaultStats = [
 ]
 
 export function AboutSection({ info }: AboutSectionProps) {
-  const stats = (info?.stats as { value: string; label: string }[] | null) ?? defaultStats
+  const stats = Array.isArray(info?.stats)
+    ? (info!.stats as { value: string; label: string }[])
+    : defaultStats
 
   return (
     <section id="about" className="py-28 bg-[#0F0D0A] relative overflow-hidden">

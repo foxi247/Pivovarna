@@ -13,7 +13,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="flex h-screen bg-admin-bg overflow-hidden">
       <AdminSidebar newLeadsCount={newLeadsCount} />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto pt-14 lg:pt-0">
           {children}
         </div>
       </div>

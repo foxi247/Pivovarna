@@ -12,6 +12,7 @@ const navLinks = [
   { href: '/products', label: 'Продукция' },
   { href: '/news', label: 'Новости' },
   { href: '/gallery', label: 'Галерея' },
+  { href: '/tours', label: 'Экскурсии' },
   { href: '/contacts', label: 'Контакты' },
 ]
 

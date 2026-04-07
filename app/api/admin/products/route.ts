@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { requireAuth } from '@/lib/api-auth'
 import { createProduct } from '@/lib/services/products.service'
 import { productSchema } from '@/lib/validations/product'
@@ -14,5 +15,7 @@ export async function POST(req: NextRequest) {
   }
 
   const product = await createProduct(parsed.data)
+  revalidatePath('/products')
+  revalidatePath('/')
   return NextResponse.json({ success: true, product }, { status: 201 })
 }

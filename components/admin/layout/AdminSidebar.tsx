@@ -5,8 +5,9 @@ import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, Globe, Info, Users, Package, Newspaper,
-  Image, Phone, Search, Inbox, Settings, Database, FileText, LogOut, ChevronDown,
-  FolderOpen,
+  Image, Phone, Search, Inbox, Settings, FileText, LogOut,
+  ChevronDown, FolderOpen, BarChart2, Menu, X, ExternalLink,
+  GraduationCap, UserSquare2,
 } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 import { useState } from 'react'
@@ -21,12 +22,14 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { href: '/admin', label: 'Главная', icon: LayoutDashboard },
+  { href: '/admin/analytics', label: 'Аналитика', icon: BarChart2 },
 ]
 
 const siteItems: NavItem[] = [
   { href: '/admin/homepage', label: 'Главная страница', icon: Globe },
   { href: '/admin/about', label: 'О компании', icon: Info },
   { href: '/admin/team', label: 'Технолог', icon: Users },
+  { href: '/admin/employees', label: 'Сотрудники', icon: UserSquare2 },
 ]
 
 const contentItems: NavItem[] = [
@@ -58,29 +61,19 @@ const systemItems: NavItem[] = [
   { href: '/admin/media', label: 'Медиафайлы', icon: FolderOpen },
   { href: '/admin/users', label: 'Пользователи', icon: Users },
   { href: '/admin/settings', label: 'Настройки', icon: Settings },
-  { href: '/admin/logs', label: 'Журнал действий', icon: FileText },
+  { href: '/admin/reset', label: 'Сброс данных', icon: FileText },
+  { href: '/admin/logs', label: 'Журнал', icon: FileText },
 ]
 
-interface SidebarGroupProps {
-  title: string
-  items: NavItem[]
+function SidebarItem({
+  item,
+  pathname,
+  onNav,
+}: {
+  item: NavItem
   pathname: string
-}
-
-function SidebarGroup({ title, items, pathname }: SidebarGroupProps) {
-  return (
-    <div className="mb-4">
-      <p className="px-3 py-1 text-[10px] font-semibold text-stone-400 uppercase tracking-widest">
-        {title}
-      </p>
-      {items.map((item) => (
-        <SidebarItem key={item.href} item={item} pathname={pathname} />
-      ))}
-    </div>
-  )
-}
-
-function SidebarItem({ item, pathname }: { item: NavItem; pathname: string }) {
+  onNav?: () => void
+}) {
   const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href))
   const [open, setOpen] = useState(isActive)
   const Icon = item.icon
@@ -107,6 +100,7 @@ function SidebarItem({ item, pathname }: { item: NavItem; pathname: string }) {
               <Link
                 key={child.href}
                 href={child.href}
+                onClick={onNav}
                 className={cn(
                   'block px-3 py-1.5 rounded-md text-sm transition-colors',
                   pathname === child.href
@@ -126,6 +120,7 @@ function SidebarItem({ item, pathname }: { item: NavItem; pathname: string }) {
   return (
     <Link
       href={item.href}
+      onClick={onNav}
       className={cn(
         'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors',
         isActive ? 'bg-stone-100 text-stone-900 font-medium' : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900'
@@ -142,28 +137,30 @@ function SidebarItem({ item, pathname }: { item: NavItem; pathname: string }) {
   )
 }
 
-interface AdminSidebarProps {
-  newLeadsCount?: number
-}
-
-export function AdminSidebar({ newLeadsCount = 0 }: AdminSidebarProps) {
-  const pathname = usePathname()
-
-  const systemItemsWithBadge = systemItems.map((item) =>
+function SidebarContent({
+  pathname,
+  newLeadsCount,
+  onNav,
+}: {
+  pathname: string
+  newLeadsCount: number
+  onNav?: () => void
+}) {
+  const systemWithBadge = systemItems.map((item) =>
     item.href === '/admin/leads' ? { ...item, badge: newLeadsCount } : item
   )
 
   return (
-    <aside className="w-56 flex-shrink-0 bg-white border-r border-admin-border h-screen sticky top-0 flex flex-col">
+    <>
       {/* Logo */}
-      <div className="px-4 py-4 border-b border-admin-border">
+      <div className="px-4 py-4 border-b border-admin-border flex-shrink-0">
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-full bg-stone-900 flex items-center justify-center flex-shrink-0">
             <span className="text-white font-bold text-[10px]">ДП</span>
           </div>
           <div>
             <p className="text-stone-900 text-xs font-semibold leading-none">Дербентская</p>
-            <p className="text-stone-400 text-[9px] leading-none mt-0.5 uppercase tracking-wider">Пивоварня</p>
+            <p className="text-stone-400 text-[9px] leading-none mt-0.5 uppercase tracking-wider">Панель управления</p>
           </div>
         </div>
       </div>
@@ -171,25 +168,114 @@ export function AdminSidebar({ newLeadsCount = 0 }: AdminSidebarProps) {
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto px-2 py-3">
         {navItems.map((item) => (
-          <SidebarItem key={item.href} item={item} pathname={pathname} />
+          <SidebarItem key={item.href} item={item} pathname={pathname} onNav={onNav} />
         ))}
 
         <div className="my-3 border-t border-stone-100" />
-        <SidebarGroup title="Сайт" items={siteItems} pathname={pathname} />
-        <SidebarGroup title="Контент" items={contentItems} pathname={pathname} />
-        <SidebarGroup title="Система" items={systemItemsWithBadge} pathname={pathname} />
+
+        <p className="px-3 py-1 text-[10px] font-semibold text-stone-400 uppercase tracking-widest">Сайт</p>
+        {siteItems.map((item) => (
+          <SidebarItem key={item.href} item={item} pathname={pathname} onNav={onNav} />
+        ))}
+
+        <div className="my-3 border-t border-stone-100" />
+
+        <p className="px-3 py-1 text-[10px] font-semibold text-stone-400 uppercase tracking-widest">Контент</p>
+        {contentItems.map((item) => (
+          <SidebarItem key={item.href} item={item} pathname={pathname} onNav={onNav} />
+        ))}
+
+        <div className="my-3 border-t border-stone-100" />
+
+        <p className="px-3 py-1 text-[10px] font-semibold text-stone-400 uppercase tracking-widest">Система</p>
+        {systemWithBadge.map((item) => (
+          <SidebarItem key={item.href} item={item} pathname={pathname} onNav={onNav} />
+        ))}
       </nav>
 
-      {/* Logout */}
-      <div className="px-2 py-3 border-t border-admin-border">
+      {/* Bottom actions */}
+      <div className="px-2 py-3 border-t border-admin-border space-y-1 flex-shrink-0">
+        <Link
+          href="/admin/tutorial"
+          onClick={onNav}
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-stone-500 hover:text-stone-900 hover:bg-stone-50 transition-colors"
+        >
+          <GraduationCap size={16} />
+          Обучение
+        </Link>
+        <Link
+          href="/"
+          target="_blank"
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-stone-500 hover:text-stone-900 hover:bg-stone-50 transition-colors"
+        >
+          <ExternalLink size={16} />
+          На сайт
+        </Link>
         <button
           onClick={() => signOut({ callbackUrl: '/auth/login' })}
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-stone-500 hover:text-stone-900 hover:bg-stone-50 transition-colors"
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-stone-500 hover:text-red-600 hover:bg-red-50 transition-colors"
         >
           <LogOut size={16} />
           Выйти
         </button>
       </div>
-    </aside>
+    </>
+  )
+}
+
+interface AdminSidebarProps {
+  newLeadsCount?: number
+}
+
+export function AdminSidebar({ newLeadsCount = 0 }: AdminSidebarProps) {
+  const pathname = usePathname()
+  const [mobileOpen, setMobileOpen] = useState(false)
+
+  return (
+    <>
+      {/* Mobile top bar */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 h-14 bg-white border-b border-admin-border flex items-center justify-between px-4">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-full bg-stone-900 flex items-center justify-center flex-shrink-0">
+            <span className="text-white font-bold text-[10px]">ДП</span>
+          </div>
+          <span className="text-stone-900 text-sm font-semibold">Панель управления</span>
+        </div>
+        <button
+          onClick={() => setMobileOpen(!mobileOpen)}
+          className="p-2 text-stone-600 hover:text-stone-900 transition-colors"
+          aria-label="Меню"
+        >
+          {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+        </button>
+      </div>
+
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div
+          className="lg:hidden fixed inset-0 z-30 bg-black/40"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      {/* Mobile drawer */}
+      <aside
+        className={cn(
+          'lg:hidden fixed top-14 left-0 bottom-0 z-40 w-64 bg-white border-r border-admin-border flex flex-col transition-transform duration-300',
+          mobileOpen ? 'translate-x-0' : '-translate-x-full'
+        )}
+      >
+        <SidebarContent
+          pathname={pathname}
+          newLeadsCount={newLeadsCount}
+          onNav={() => setMobileOpen(false)}
+        />
+      </aside>
+
+      {/* Desktop sidebar */}
+      <aside className="hidden lg:flex w-56 flex-shrink-0 bg-white border-r border-admin-border h-screen sticky top-0 flex-col">
+        <SidebarContent pathname={pathname} newLeadsCount={newLeadsCount} />
+      </aside>
+    </>
   )
 }
