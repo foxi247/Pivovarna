@@ -1,7 +1,7 @@
 'use client'
 
-import { motion, useInView } from 'framer-motion'
-import { useRef } from 'react'
+import { motion } from 'framer-motion'
+import { useRef, useState, useEffect } from 'react'
 
 interface AnimatedSectionProps {
   children: React.ReactNode
@@ -10,14 +10,43 @@ interface AnimatedSectionProps {
   direction?: 'up' | 'down' | 'left' | 'right' | 'none'
 }
 
+function useInViewNative(margin = '-80px') {
+  const ref = useRef<HTMLDivElement>(null)
+  const [isInView, setIsInView] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+
+    if (typeof IntersectionObserver === 'undefined') {
+      setIsInView(true)
+      return
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInView(true)
+          observer.disconnect()
+        }
+      },
+      { rootMargin: margin }
+    )
+
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [margin])
+
+  return { ref, isInView }
+}
+
 export function AnimatedSection({
   children,
   className,
   delay = 0,
   direction = 'up',
 }: AnimatedSectionProps) {
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: '-80px' })
+  const { ref, isInView } = useInViewNative('-80px')
 
   const variants = {
     hidden: {
@@ -55,8 +84,7 @@ export function StaggerContainer({
   className?: string
   delay?: number
 }) {
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: '-60px' })
+  const { ref, isInView } = useInViewNative('-60px')
 
   return (
     <motion.div
