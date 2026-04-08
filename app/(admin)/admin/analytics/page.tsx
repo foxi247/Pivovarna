@@ -19,6 +19,7 @@ export default async function AnalyticsPage() {
     dailyStats: [] as { day: string; count: number }[],
     articleMap: {} as Record<string, { id: string; title: string; slug: string }>,
     dbError: false,
+    dbErrorMsg: '',
   }
 
   try {
@@ -29,7 +30,6 @@ export default async function AnalyticsPage() {
       totalArticleViews,
       topArticlesRaw,
       topPages,
-      rawDailyStats,
     ] = await Promise.all([
       prisma.pageView.count(),
       prisma.pageView.count({ where: { createdAt: { gte: todayStart } } }),
@@ -47,13 +47,6 @@ export default async function AnalyticsPage() {
         orderBy: { _count: { path: 'desc' } },
         take: 10,
       }),
-      prisma.$queryRaw<{ day: unknown; count: unknown }[]>`
-        SELECT DATE(created_at) as day, COUNT(*) as count
-        FROM page_views
-        WHERE created_at >= ${weekStart}
-        GROUP BY DATE(created_at)
-        ORDER BY day ASC
-      `,
     ])
 
     const articleIds = topArticlesRaw.map((a) => a.articleId)
@@ -64,6 +57,26 @@ export default async function AnalyticsPage() {
         })
       : []
 
+    // Raw SQL отдельно — если упадёт, остальные данные всё равно покажутся
+    let dailyStats: { day: string; count: number }[] = []
+    try {
+      const rawDailyStats = await prisma.$queryRaw<{ day: unknown; count: unknown }[]>`
+        SELECT DATE(created_at) as day, COUNT(*) as count
+        FROM page_views
+        WHERE created_at >= ${weekStart}
+        GROUP BY DATE(created_at)
+        ORDER BY day ASC
+      `
+      dailyStats = rawDailyStats.map((d) => ({
+        day: d.day instanceof Date
+          ? d.day.toISOString().slice(0, 10)
+          : String(d.day).slice(0, 10),
+        count: Number(d.count),
+      }))
+    } catch (rawErr) {
+      console.error('[Analytics] $queryRaw error:', rawErr)
+    }
+
     data = {
       totalViews,
       todayViews,
@@ -71,17 +84,14 @@ export default async function AnalyticsPage() {
       totalArticleViews,
       topPages,
       topArticles: topArticlesRaw,
-      dailyStats: rawDailyStats.map((d) => ({
-        day: d.day instanceof Date
-          ? d.day.toISOString().slice(0, 10)
-          : String(d.day).slice(0, 10),
-        count: Number(d.count),
-      })),
+      dailyStats,
       articleMap: Object.fromEntries(articles.map((a) => [a.id, a])),
       dbError: false,
     }
-  } catch {
+  } catch (err) {
+    console.error('[Analytics] DB error:', err)
     data.dbError = true
+    data.dbErrorMsg = err instanceof Error ? err.message : String(err)
   }
 
   const stats = [
@@ -99,8 +109,12 @@ export default async function AnalyticsPage() {
       </div>
 
       {data.dbError && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 text-amber-800 text-sm">
-          <strong>Аналитика не настроена.</strong> Выполните <code className="bg-amber-100 px-1 rounded">npx prisma db push</code> для создания таблиц аналитики, затем перезапустите сервер.
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 text-amber-800 text-sm space-y-1">
+          <p><strong>Ошибка загрузки аналитики.</strong> Вероятно, таблицы <code className="bg-amber-100 px-1 rounded">page_views</code> / <code className="bg-amber-100 px-1 rounded">article_views</code> отсутствуют в БД.</p>
+          {data.dbErrorMsg && (
+            <p className="font-mono text-xs break-all">{data.dbErrorMsg}</p>
+          )}
+          <p>Зайдите в Supabase → SQL Editor и выполните SQL из файла <code className="bg-amber-100 px-1 rounded">prisma/create-analytics-tables.sql</code></p>
         </div>
       )}
 
