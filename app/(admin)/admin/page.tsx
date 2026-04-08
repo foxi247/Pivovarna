@@ -7,13 +7,27 @@ import { formatDateRelative, LEAD_TYPE_LABELS, LEAD_STATUS_LABELS, LEAD_STATUS_C
 import { Inbox, TrendingUp, CheckCircle, Clock, PlusCircle, ExternalLink } from 'lucide-react'
 
 export default async function AdminDashboard() {
-  const [session, stats, { leads: recentLeads }, productsCount, newsCount] = await Promise.all([
-    auth(),
-    getLeadsStats(),
-    getLeads({ limit: 5 }),
-    prisma.product.count({ where: { isActive: true } }),
-    prisma.newsArticle.count({ where: { isPublished: true } }),
-  ])
+  const session = await auth()
+
+  let stats = { newCount: 0, todayCount: 0, inProgress: 0, closed: 0, total: 0 }
+  let recentLeads: Awaited<ReturnType<typeof getLeads>>['leads'] = []
+  let productsCount = 0
+  let newsCount = 0
+
+  try {
+    const [statsRes, leadsRes, pCount, nCount] = await Promise.all([
+      getLeadsStats(),
+      getLeads({ limit: 5 }),
+      prisma.product.count({ where: { isActive: true } }),
+      prisma.newsArticle.count({ where: { isPublished: true } }),
+    ])
+    stats = statsRes
+    recentLeads = leadsRes.leads
+    productsCount = pCount
+    newsCount = nCount
+  } catch {
+    // БД недоступна — показываем нули
+  }
 
   const greeting = () => {
     const h = new Date().getHours()

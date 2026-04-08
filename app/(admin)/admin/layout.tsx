@@ -7,7 +7,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const session = await auth()
   if (!session?.user) redirect('/auth/login')
 
-  const newLeadsCount = await getNewLeadsCount()
+  const newLeadsCount = await getNewLeadsCount().catch(() => 0)
   const userRole = (session.user as { role?: string }).role ?? 'CONTENT_EDITOR'
 
   return (
