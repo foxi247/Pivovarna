@@ -6,7 +6,7 @@ export default async function AdminMediaPage() {
   const files = await prisma.mediaFile.findMany({
     orderBy: { createdAt: 'desc' },
     take: 100,
-  })
+  }).catch(() => [])
 
   return (
     <div className="p-8">

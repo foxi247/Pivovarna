@@ -13,7 +13,7 @@ const pages = [
 ]
 
 export default async function AdminSeoPage() {
-  const allSeo = await getAllSeoSettings()
+  const allSeo = await getAllSeoSettings().catch(() => [])
   const seoMap = Object.fromEntries(allSeo.map((s) => [s.page, s]))
 
   return (

@@ -4,7 +4,7 @@ import { Plus, Edit2, Eye, EyeOff } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 
 export default async function AdminNewsPage() {
-  const articles = await getNewsArticles(false)
+  const articles = await getNewsArticles(false).catch(() => [])
 
   return (
     <div className="p-8">

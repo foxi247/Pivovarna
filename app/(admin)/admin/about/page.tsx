@@ -2,7 +2,7 @@ import { getCompanyInfo } from '@/lib/services/settings.service'
 import { AboutForm } from '@/components/admin/about/AboutForm'
 
 export default async function AdminAboutPage() {
-  const info = await getCompanyInfo()
+  const info = await getCompanyInfo().catch(() => null)
   return (
     <div className="p-8">
       <div className="mb-6">

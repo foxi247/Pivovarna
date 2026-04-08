@@ -3,8 +3,8 @@ import { Plus, Eye, EyeOff, Trash2 } from 'lucide-react'
 
 export default async function AdminGalleryPage() {
   const [items, categories] = await Promise.all([
-    getGalleryItems(undefined, false),
-    getGalleryCategories(false),
+    getGalleryItems(undefined, false).catch(() => []),
+    getGalleryCategories(false).catch(() => []),
   ])
 
   return (

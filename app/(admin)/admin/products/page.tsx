@@ -5,7 +5,7 @@ import { prisma } from '@/lib/db'
 import { formatDate } from '@/lib/utils'
 
 export default async function AdminProductsPage() {
-  const products = await getProducts(undefined, false)
+  const products = await getProducts(undefined, false).catch(() => [])
 
   return (
     <div className="p-8">

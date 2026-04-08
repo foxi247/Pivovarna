@@ -2,7 +2,7 @@ import { getSiteSettings } from '@/lib/services/settings.service'
 import { SettingsForm } from '@/components/admin/settings/SettingsForm'
 
 export default async function AdminSettingsPage() {
-  const settings = await getSiteSettings()
+  const settings = await getSiteSettings().catch(() => null)
 
   return (
     <div className="p-8">

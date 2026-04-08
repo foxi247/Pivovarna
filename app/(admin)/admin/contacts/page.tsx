@@ -2,7 +2,7 @@ import { getSiteSettings } from '@/lib/services/settings.service'
 import { SettingsForm } from '@/components/admin/settings/SettingsForm'
 
 export default async function AdminContactsPage() {
-  const settings = await getSiteSettings()
+  const settings = await getSiteSettings().catch(() => null)
   return (
     <div className="p-8">
       <div className="mb-6">

@@ -3,7 +3,7 @@ import { TeamPersonForm } from '@/components/admin/team/TeamPersonForm'
 import { Plus } from 'lucide-react'
 
 export default async function AdminTeamPage() {
-  const persons = await getTeamPersons(false)
+  const persons = await getTeamPersons(false).catch(() => [])
   const person = persons[0] ?? null
 
   return (

@@ -9,8 +9,8 @@ export default async function AdminLogsPage() {
       include: { user: { select: { id: true, name: true } } },
       orderBy: { createdAt: 'desc' },
       take: 500,
-    }),
-    prisma.user.findMany({ select: { id: true, name: true }, orderBy: { name: 'asc' } }),
+    }).catch(() => []),
+    prisma.user.findMany({ select: { id: true, name: true }, orderBy: { name: 'asc' } }).catch(() => []),
   ])
 
   return <LogsClient logs={logs} users={users} />

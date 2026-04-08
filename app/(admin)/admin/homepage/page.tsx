@@ -3,10 +3,14 @@ import Link from 'next/link'
 import { Plus, Edit2, Eye, EyeOff } from 'lucide-react'
 
 export default async function AdminHomepagePage() {
-  const [slides, sections] = await Promise.all([
-    getHeroSlides(false),
-    getHomeSections(),
-  ])
+  let slides: Awaited<ReturnType<typeof getHeroSlides>> = []
+  let sections: Awaited<ReturnType<typeof getHomeSections>> = []
+
+  try {
+    ;[slides, sections] = await Promise.all([getHeroSlides(false), getHomeSections()])
+  } catch (err) {
+    console.error('[AdminHomepage] DB error:', err)
+  }
 
   return (
     <div className="p-8">

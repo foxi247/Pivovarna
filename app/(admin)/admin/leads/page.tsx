@@ -22,7 +22,7 @@ export default async function LeadsPage({ searchParams }: PageProps) {
     search: searchParams.search,
     page,
     limit: 25,
-  })
+  }).catch(() => ({ leads: [], total: 0, pages: 1 }))
 
   const users = await prisma.user.findMany({ select: { id: true, name: true } })
 
