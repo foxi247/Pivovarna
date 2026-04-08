@@ -57,25 +57,20 @@ export default async function AnalyticsPage() {
         })
       : []
 
-    // Raw SQL отдельно — если упадёт, остальные данные всё равно покажутся
-    let dailyStats: { day: string; count: number }[] = []
-    try {
-      const rawDailyStats = await prisma.$queryRaw<{ day: unknown; count: unknown }[]>`
-        SELECT DATE(created_at) as day, COUNT(*) as count
-        FROM page_views
-        WHERE created_at >= ${weekStart}
-        GROUP BY DATE(created_at)
-        ORDER BY day ASC
-      `
-      dailyStats = rawDailyStats.map((d) => ({
-        day: d.day instanceof Date
-          ? d.day.toISOString().slice(0, 10)
-          : String(d.day).slice(0, 10),
-        count: Number(d.count),
-      }))
-    } catch (rawErr) {
-      console.error('[Analytics] $queryRaw error:', rawErr)
+    // Группируем по дням через Prisma ORM (без сырого SQL)
+    const weekViews7d = await prisma.pageView.findMany({
+      where: { createdAt: { gte: weekStart } },
+      select: { createdAt: true },
+    }).catch(() => [])
+
+    const dayMap: Record<string, number> = {}
+    for (const v of weekViews7d) {
+      const day = v.createdAt.toISOString().slice(0, 10)
+      dayMap[day] = (dayMap[day] ?? 0) + 1
     }
+    const dailyStats = Object.entries(dayMap)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([day, count]) => ({ day, count }))
 
     data = {
       totalViews,

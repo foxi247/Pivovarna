@@ -14,8 +14,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Ошибка валидации', details: parsed.error.flatten() }, { status: 400 })
   }
 
-  const article = await createNewsArticle(parsed.data)
-  revalidatePath('/news')
-  revalidatePath('/')
-  return NextResponse.json({ success: true, article }, { status: 201 })
+  try {
+    const article = await createNewsArticle(parsed.data)
+    revalidatePath('/news')
+    revalidatePath('/')
+    return NextResponse.json({ success: true, article }, { status: 201 })
+  } catch (err) {
+    console.error('[API/news POST]', err)
+    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 })
+  }
 }
