@@ -87,6 +87,7 @@ export default async function AnalyticsPage() {
       dailyStats,
       articleMap: Object.fromEntries(articles.map((a) => [a.id, a])),
       dbError: false,
+      dbErrorMsg: '',
     }
   } catch (err) {
     console.error('[Analytics] DB error:', err)
