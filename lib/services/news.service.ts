@@ -35,7 +35,8 @@ export async function createNewsArticle(data: NewsArticleInput) {
 }
 
 export async function updateNewsArticle(id: string, data: Partial<NewsArticleInput>) {
-  const publishedAt = data.isPublished ? (data.publishedAt ?? new Date()) : null
+  const parsedAt = data.publishedAt ? new Date(data.publishedAt as unknown as string) : null
+  const publishedAt = data.isPublished ? (parsedAt && !isNaN(parsedAt.getTime()) ? parsedAt : new Date()) : null
   return prisma.newsArticle.update({ where: { id }, data: { ...data, publishedAt, categoryId: data.categoryId ?? undefined } })
 }
 

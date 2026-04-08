@@ -26,6 +26,9 @@ export function NewsArticleForm({ article, categories }: NewsArticleFormProps) {
       content: article?.content ?? '',
       coverImageUrl: article?.coverImageUrl ?? '',
       isPublished: article?.isPublished ?? false,
+      publishedAt: article?.publishedAt
+        ? new Date(article.publishedAt).toISOString().slice(0, 16)
+        : '',
       seoTitle: article?.seoTitle ?? '',
       seoDescription: article?.seoDescription ?? '',
     },
@@ -60,6 +63,7 @@ export function NewsArticleForm({ article, categories }: NewsArticleFormProps) {
       const res = await fetch(`/api/admin/news/${article.id}`, { method: 'DELETE' })
       if (!res.ok) throw new Error()
       toast.success('Статья удалена')
+      router.refresh()
       router.push('/admin/news')
     } catch {
       toast.error('Ошибка удаления')
@@ -119,8 +123,8 @@ export function NewsArticleForm({ article, categories }: NewsArticleFormProps) {
       </div>
 
       {/* Публикация */}
-      <div className="bg-white border border-admin-border rounded-xl p-6">
-        <h2 className="text-admin-text-muted font-semibold text-sm uppercase tracking-wider mb-4">Публикация</h2>
+      <div className="bg-white border border-admin-border rounded-xl p-6 space-y-4">
+        <h2 className="text-admin-text-muted font-semibold text-sm uppercase tracking-wider">Публикация</h2>
         <label className="flex items-center gap-3 cursor-pointer">
           <input {...register('isPublished')} type="checkbox" className="w-4 h-4 rounded border-admin-border accent-stone-900" />
           <div>
@@ -132,6 +136,17 @@ export function NewsArticleForm({ article, categories }: NewsArticleFormProps) {
             </p>
           </div>
         </label>
+        <div>
+          <label className="block text-admin-text text-sm font-medium mb-1.5">
+            Дата публикации
+            <span className="text-admin-text-muted font-normal ml-1">(если не указана — установится автоматически)</span>
+          </label>
+          <input
+            {...register('publishedAt')}
+            type="datetime-local"
+            className={inputCls}
+          />
+        </div>
       </div>
 
       {/* SEO */}

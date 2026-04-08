@@ -8,12 +8,13 @@ import { Menu, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navLinks = [
-  { href: '/about', label: 'О нас' },
-  { href: '/products', label: 'Продукция' },
-  { href: '/news', label: 'Новости' },
-  { href: '/gallery', label: 'Галерея' },
-  { href: '/tours', label: 'Экскурсии' },
-  { href: '/contacts', label: 'Контакты' },
+  { href: '/', label: 'Главная', exact: true },
+  { href: '/about', label: 'О нас', exact: false },
+  { href: '/products', label: 'Продукция', exact: false },
+  { href: '/news', label: 'Новости', exact: false },
+  { href: '/gallery', label: 'Галерея', exact: false },
+  { href: '/tours', label: 'Экскурсии', exact: false },
+  { href: '/contacts', label: 'Контакты', exact: false },
 ]
 
 export function Header() {
@@ -26,6 +27,11 @@ export function Header() {
     window.addEventListener('scroll', handler, { passive: true })
     return () => window.removeEventListener('scroll', handler)
   }, [])
+
+  function isActive(link: { href: string; exact: boolean }) {
+    if (link.exact) return pathname === link.href
+    return pathname === link.href || pathname.startsWith(link.href + '/')
+  }
 
   return (
     <>
@@ -42,7 +48,7 @@ export function Header() {
       >
         <div className="max-w-7xl mx-auto px-6 lg:px-12 flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 group">
+          <Link href="/" className="flex items-center gap-3 group flex-shrink-0">
             <div className="w-9 h-9 rounded-full bg-[#C8873A] flex items-center justify-center">
               <span className="text-[#0F0D0A] font-bold text-sm">ДП</span>
             </div>
@@ -57,24 +63,32 @@ export function Header() {
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden lg:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  'text-sm transition-colors duration-200',
-                  pathname === link.href || pathname.startsWith(link.href + '/')
-                    ? 'text-[#C8873A]'
-                    : 'text-[#B8A898] hover:text-[#F5EFE6]'
-                )}
-              >
-                {link.label}
-              </Link>
-            ))}
+          <nav className="hidden lg:flex items-center gap-7">
+            {navLinks.map((link) => {
+              const active = isActive(link)
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={cn(
+                    'relative text-sm transition-colors duration-200 pb-0.5',
+                    active ? 'text-[#C8873A]' : 'text-[#B8A898] hover:text-[#F5EFE6]'
+                  )}
+                >
+                  {link.label}
+                  {active && (
+                    <motion.span
+                      layoutId="nav-underline"
+                      className="absolute -bottom-0.5 left-0 right-0 h-[2px] bg-[#C8873A] rounded-full"
+                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                </Link>
+              )
+            })}
           </nav>
 
-          {/* CTA + mobile */}
+          {/* CTA + mobile toggle */}
           <div className="flex items-center gap-4">
             <Link
               href="/cooperation"
@@ -116,7 +130,7 @@ export function Header() {
                     onClick={() => setMobileOpen(false)}
                     className={cn(
                       'block py-3 text-lg border-b border-[#2E2820] transition-colors',
-                      pathname === link.href ? 'text-[#C8873A]' : 'text-[#F5EFE6]'
+                      isActive(link) ? 'text-[#C8873A]' : 'text-[#F5EFE6]'
                     )}
                   >
                     {link.label}
@@ -126,7 +140,7 @@ export function Header() {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.35 }}
+                transition={{ delay: 0.45 }}
                 className="mt-4"
               >
                 <Link

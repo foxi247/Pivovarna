@@ -1,19 +1,29 @@
 import Link from 'next/link'
 import { MapPin, Phone, Mail, Clock } from 'lucide-react'
+import { getSiteSettings } from '@/lib/services/settings.service'
 
 const footerLinks = [
+  { href: '/', label: 'Главная' },
   { href: '/about', label: 'О нас' },
   { href: '/products', label: 'Продукция' },
-  { href: '/team', label: 'Наш технолог' },
   { href: '/news', label: 'Новости' },
   { href: '/gallery', label: 'Галерея' },
+  { href: '/tours', label: 'Экскурсии' },
   { href: '/contacts', label: 'Контакты' },
   { href: '/cooperation', label: 'Сотрудничество' },
-  { href: '/tours', label: 'Экскурсии' },
   { href: '/partners', label: 'Партнёрам' },
 ]
 
-export function Footer() {
+export async function Footer() {
+  const settings = await getSiteSettings().catch(() => null)
+
+  const phone = settings?.phone ?? '+7 (8722) 00-00-00'
+  const email = settings?.email ?? 'info@pivovarna.ru'
+  const address = settings?.address ?? 'г. Дербент, ул. Производственная, 15'
+  const hours = settings?.workingHours ?? 'Пн–Пт: 9:00–18:00'
+  const siteName = settings?.siteName ?? 'Дербентская пивоварня'
+  const tagline = settings?.footerText ?? 'Премиальное пиво из сердца Дагестана. Традиции, качество и современные технологии пивоварения.'
+
   return (
     <footer className="bg-[#1A1712] border-t border-[#3D352B]">
       <div className="max-w-7xl mx-auto px-6 lg:px-12 py-16">
@@ -25,13 +35,11 @@ export function Footer() {
                 <span className="text-[#0F0D0A] font-bold text-sm">ДП</span>
               </div>
               <div>
-                <p className="font-display text-[#F5EFE6] text-sm font-semibold leading-none">Дербентская</p>
+                <p className="font-display text-[#F5EFE6] text-sm font-semibold leading-none">{siteName.split(' ')[0]}</p>
                 <p className="text-[#C8873A] text-[10px] tracking-[0.25em] uppercase leading-none mt-0.5">Пивоварня</p>
               </div>
             </div>
-            <p className="text-[#7A6C5E] text-sm leading-relaxed">
-              Премиальное пиво из сердца Дагестана. Традиции, качество и современные технологии пивоварения с 2008 года.
-            </p>
+            <p className="text-[#7A6C5E] text-sm leading-relaxed">{tagline}</p>
           </div>
 
           {/* Navigation */}
@@ -66,33 +74,41 @@ export function Footer() {
           <div>
             <h4 className="text-[#F5EFE6] text-sm font-semibold mb-4 uppercase tracking-widest">Контакты</h4>
             <ul className="space-y-3">
-              <li className="flex gap-2.5 text-sm text-[#7A6C5E]">
-                <MapPin size={14} className="text-[#C8873A] mt-0.5 flex-shrink-0" />
-                <span>г. Дербент, ул. Производственная, 15</span>
-              </li>
-              <li>
-                <a href="tel:+78722000000" className="flex gap-2.5 text-sm text-[#7A6C5E] hover:text-[#C8873A] transition-colors">
-                  <Phone size={14} className="text-[#C8873A] mt-0.5 flex-shrink-0" />
-                  +7 (8722) 00-00-00
-                </a>
-              </li>
-              <li>
-                <a href="mailto:info@pivovarna.ru" className="flex gap-2.5 text-sm text-[#7A6C5E] hover:text-[#C8873A] transition-colors">
-                  <Mail size={14} className="text-[#C8873A] mt-0.5 flex-shrink-0" />
-                  info@pivovarna.ru
-                </a>
-              </li>
-              <li className="flex gap-2.5 text-sm text-[#7A6C5E]">
-                <Clock size={14} className="text-[#C8873A] mt-0.5 flex-shrink-0" />
-                Пн–Пт: 9:00–18:00
-              </li>
+              {address && (
+                <li className="flex gap-2.5 text-sm text-[#7A6C5E]">
+                  <MapPin size={14} className="text-[#C8873A] mt-0.5 flex-shrink-0" />
+                  <span>{address}</span>
+                </li>
+              )}
+              {phone && (
+                <li>
+                  <a href={`tel:${phone.replace(/[^+\d]/g, '')}`} className="flex gap-2.5 text-sm text-[#7A6C5E] hover:text-[#C8873A] transition-colors">
+                    <Phone size={14} className="text-[#C8873A] mt-0.5 flex-shrink-0" />
+                    {phone}
+                  </a>
+                </li>
+              )}
+              {email && (
+                <li>
+                  <a href={`mailto:${email}`} className="flex gap-2.5 text-sm text-[#7A6C5E] hover:text-[#C8873A] transition-colors">
+                    <Mail size={14} className="text-[#C8873A] mt-0.5 flex-shrink-0" />
+                    {email}
+                  </a>
+                </li>
+              )}
+              {hours && (
+                <li className="flex gap-2.5 text-sm text-[#7A6C5E]">
+                  <Clock size={14} className="text-[#C8873A] mt-0.5 flex-shrink-0" />
+                  {hours}
+                </li>
+              )}
             </ul>
           </div>
         </div>
 
         <div className="mt-12 pt-6 border-t border-[#3D352B] flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-[#4D4438] text-sm">
-            © {new Date().getFullYear()} Дербентская пивоварня. Все права защищены.
+            © {new Date().getFullYear()} {siteName}. Все права защищены.
           </p>
           <p className="text-[#4D4438] text-xs">
             Информация носит ознакомительный характер. 18+

@@ -23,6 +23,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   revalidatePath('/news')
   revalidatePath(`/news/${params.id}`)
   revalidatePath('/')
+  revalidatePath('/admin/news')
   return NextResponse.json({ success: true, article })
 }
 
@@ -43,5 +44,6 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
   revalidatePath('/news')
   revalidatePath('/')
+  revalidatePath('/admin/news')
   return NextResponse.json({ success: true })
 }

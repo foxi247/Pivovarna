@@ -17,6 +17,7 @@ interface NavItem {
   label: string
   icon: React.ElementType
   badge?: number
+  roles?: string[]
   children?: { href: string; label: string }[]
 }
 
@@ -56,13 +57,13 @@ const contentItems: NavItem[] = [
 
 const systemItems: NavItem[] = [
   { href: '/admin/leads', label: 'Заявки', icon: Inbox },
-  { href: '/admin/contacts', label: 'Контакты', icon: Phone },
-  { href: '/admin/seo', label: 'SEO', icon: Search },
+  { href: '/admin/contacts', label: 'Контакты', icon: Phone, roles: ['SUPERADMIN', 'ADMIN'] },
+  { href: '/admin/seo', label: 'SEO', icon: Search, roles: ['SUPERADMIN', 'ADMIN'] },
   { href: '/admin/media', label: 'Медиафайлы', icon: FolderOpen },
-  { href: '/admin/users', label: 'Пользователи', icon: Users },
-  { href: '/admin/settings', label: 'Настройки', icon: Settings },
-  { href: '/admin/reset', label: 'Сброс данных', icon: FileText },
-  { href: '/admin/logs', label: 'Журнал', icon: FileText },
+  { href: '/admin/users', label: 'Пользователи', icon: Users, roles: ['SUPERADMIN', 'ADMIN'] },
+  { href: '/admin/settings', label: 'Настройки', icon: Settings, roles: ['SUPERADMIN', 'ADMIN'] },
+  { href: '/admin/reset', label: 'Сброс данных', icon: FileText, roles: ['SUPERADMIN'] },
+  { href: '/admin/logs', label: 'Журнал', icon: FileText, roles: ['SUPERADMIN', 'ADMIN'] },
 ]
 
 function SidebarItem({
@@ -140,15 +141,24 @@ function SidebarItem({
 function SidebarContent({
   pathname,
   newLeadsCount,
+  userRole,
   onNav,
 }: {
   pathname: string
   newLeadsCount: number
+  userRole: string
   onNav?: () => void
 }) {
-  const systemWithBadge = systemItems.map((item) =>
-    item.href === '/admin/leads' ? { ...item, badge: newLeadsCount } : item
-  )
+  function canSee(item: NavItem) {
+    if (!item.roles) return true
+    return item.roles.includes(userRole)
+  }
+
+  const systemWithBadge = systemItems
+    .filter(canSee)
+    .map((item) =>
+      item.href === '/admin/leads' ? { ...item, badge: newLeadsCount } : item
+    )
 
   return (
     <>
@@ -187,10 +197,14 @@ function SidebarContent({
 
         <div className="my-3 border-t border-stone-100" />
 
-        <p className="px-3 py-1 text-[10px] font-semibold text-stone-400 uppercase tracking-widest">Система</p>
-        {systemWithBadge.map((item) => (
-          <SidebarItem key={item.href} item={item} pathname={pathname} onNav={onNav} />
-        ))}
+        {systemWithBadge.length > 0 && (
+          <>
+            <p className="px-3 py-1 text-[10px] font-semibold text-stone-400 uppercase tracking-widest">Система</p>
+            {systemWithBadge.map((item) => (
+              <SidebarItem key={item.href} item={item} pathname={pathname} onNav={onNav} />
+            ))}
+          </>
+        )}
       </nav>
 
       {/* Bottom actions */}
@@ -225,9 +239,10 @@ function SidebarContent({
 
 interface AdminSidebarProps {
   newLeadsCount?: number
+  userRole?: string
 }
 
-export function AdminSidebar({ newLeadsCount = 0 }: AdminSidebarProps) {
+export function AdminSidebar({ newLeadsCount = 0, userRole = 'CONTENT_EDITOR' }: AdminSidebarProps) {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
 
@@ -268,13 +283,14 @@ export function AdminSidebar({ newLeadsCount = 0 }: AdminSidebarProps) {
         <SidebarContent
           pathname={pathname}
           newLeadsCount={newLeadsCount}
+          userRole={userRole}
           onNav={() => setMobileOpen(false)}
         />
       </aside>
 
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex w-56 flex-shrink-0 bg-white border-r border-admin-border h-screen sticky top-0 flex-col">
-        <SidebarContent pathname={pathname} newLeadsCount={newLeadsCount} />
+        <SidebarContent pathname={pathname} newLeadsCount={newLeadsCount} userRole={userRole} />
       </aside>
     </>
   )

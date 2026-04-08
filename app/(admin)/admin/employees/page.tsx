@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Plus, Pencil, Trash2, GripVertical, X, Check } from 'lucide-react'
+import { Plus, Pencil, Trash2, ChevronUp, ChevronDown, X, Check, ExternalLink } from 'lucide-react'
 
 interface Employee {
   id: string
@@ -49,6 +49,7 @@ export default function EmployeesPage() {
     setEditId(null)
     setForm({ ...empty })
     setError('')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   function openEdit(emp: Employee) {
@@ -64,6 +65,7 @@ export default function EmployeesPage() {
       isActive: emp.isActive,
     })
     setError('')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   function closeForm() {
@@ -109,20 +111,57 @@ export default function EmployeesPage() {
     if (res.ok) { setDeleteId(null); await load() }
   }
 
+  async function move(id: string, direction: 'up' | 'down') {
+    const idx = employees.findIndex((e) => e.id === id)
+    if (direction === 'up' && idx === 0) return
+    if (direction === 'down' && idx === employees.length - 1) return
+
+    const swapIdx = direction === 'up' ? idx - 1 : idx + 1
+    const updated = [...employees]
+    ;[updated[idx], updated[swapIdx]] = [updated[swapIdx], updated[idx]]
+
+    // Optimistic update
+    setEmployees(updated)
+
+    // Persist new sortOrders
+    await Promise.all([
+      fetch(`/api/admin/employees/${updated[idx].id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sortOrder: idx }),
+      }),
+      fetch(`/api/admin/employees/${updated[swapIdx].id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sortOrder: swapIdx }),
+      }),
+    ])
+  }
+
   return (
     <div className="p-6 lg:p-8">
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-admin-text text-2xl font-semibold">Сотрудники</h1>
-          <p className="text-admin-text-muted text-sm mt-0.5">Команда пивоварни</p>
+          <p className="text-admin-text-muted text-sm mt-0.5">Команда пивоварни · отображается на сайте</p>
         </div>
-        <button
-          onClick={openNew}
-          className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors"
-        >
-          <Plus size={16} />
-          Добавить
-        </button>
+        <div className="flex gap-2">
+          <a
+            href="/about"
+            target="_blank"
+            className="flex items-center gap-1.5 border border-admin-border rounded-lg px-3 py-2 text-admin-text-muted text-sm hover:bg-admin-bg transition-colors"
+          >
+            <ExternalLink size={14} />
+            На сайте
+          </a>
+          <button
+            onClick={openNew}
+            className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors"
+          >
+            <Plus size={16} />
+            Добавить
+          </button>
+        </div>
       </div>
 
       {/* Form */}
@@ -169,7 +208,7 @@ export default function EmployeesPage() {
                 value={form.photoUrl ?? ''}
                 onChange={e => setForm(f => f && ({ ...f, photoUrl: e.target.value }))}
                 className="w-full border border-admin-border rounded-lg px-3 py-2 text-admin-text text-sm focus:outline-none focus:ring-2 focus:ring-amber-300"
-                placeholder="/uploads/photo.jpg"
+                placeholder="https://... или /uploads/photo.jpg"
               />
             </div>
             <div>
@@ -241,9 +280,25 @@ export default function EmployeesPage() {
         </div>
       ) : (
         <div className="space-y-2">
-          {employees.map((emp) => (
+          {employees.map((emp, idx) => (
             <div key={emp.id} className="bg-white border border-admin-border rounded-xl p-4 flex items-center gap-4">
-              <GripVertical size={16} className="text-admin-text-muted flex-shrink-0 cursor-grab" />
+              {/* Sort buttons */}
+              <div className="flex flex-col gap-0.5 flex-shrink-0">
+                <button
+                  onClick={() => move(emp.id, 'up')}
+                  disabled={idx === 0}
+                  className="p-0.5 text-admin-text-muted hover:text-admin-text disabled:opacity-30 transition-colors"
+                >
+                  <ChevronUp size={14} />
+                </button>
+                <button
+                  onClick={() => move(emp.id, 'down')}
+                  disabled={idx === employees.length - 1}
+                  className="p-0.5 text-admin-text-muted hover:text-admin-text disabled:opacity-30 transition-colors"
+                >
+                  <ChevronDown size={14} />
+                </button>
+              </div>
 
               {emp.photoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element

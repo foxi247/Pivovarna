@@ -1,4 +1,5 @@
 import { getGalleryItems, getGalleryCategories } from '@/lib/services/settings.service'
+import { GalleryWithFilter } from '@/components/public/gallery/GalleryWithFilter'
 import type { Metadata } from 'next'
 
 export const revalidate = 300
@@ -8,13 +9,9 @@ export const metadata: Metadata = {
   description: 'Фотогалерея Дербентской пивоварни. Производство, продукция, мероприятия.',
 }
 
-export default async function GalleryPage({
-  searchParams,
-}: {
-  searchParams: { category?: string }
-}) {
+export default async function GalleryPage() {
   const [items, categories] = await Promise.all([
-    getGalleryItems(searchParams.category),
+    getGalleryItems(),
     getGalleryCategories(),
   ])
 
@@ -26,53 +23,7 @@ export default async function GalleryPage({
           <h1 className="font-display text-[clamp(2rem,5vw,4rem)] font-bold text-[#F5EFE6] mt-3">Галерея</h1>
         </div>
 
-        {categories.length > 0 && (
-          <div className="flex flex-wrap gap-3 mb-10">
-            <a
-              href="/gallery"
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                !searchParams.category
-                  ? 'bg-[#C8873A] text-[#0F0D0A]'
-                  : 'bg-[#231F1A] text-[#B8A898] border border-[#3D352B]'
-              }`}
-            >
-              Все фото
-            </a>
-            {categories.map((cat) => (
-              <a
-                key={cat.id}
-                href={`/gallery?category=${cat.slug}`}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  searchParams.category === cat.slug
-                    ? 'bg-[#C8873A] text-[#0F0D0A]'
-                    : 'bg-[#231F1A] text-[#B8A898] border border-[#3D352B]'
-                }`}
-              >
-                {cat.name}
-              </a>
-            ))}
-          </div>
-        )}
-
-        {items.length === 0 ? (
-          <div className="text-center py-20 text-[#4D4438]">Фотографии скоро появятся</div>
-        ) : (
-          <div className="columns-2 md:columns-3 lg:columns-4 gap-3 space-y-3">
-            {items.map((item) => (
-              <div
-                key={item.id}
-                className="break-inside-avoid rounded-xl overflow-hidden bg-[#231F1A] group cursor-zoom-in"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={item.thumbUrl || item.imageUrl}
-                  alt={item.title || 'Галерея'}
-                  className="w-full block transition-transform duration-500 group-hover:scale-105"
-                />
-              </div>
-            ))}
-          </div>
-        )}
+        <GalleryWithFilter items={items} categories={categories} />
       </div>
     </div>
   )
