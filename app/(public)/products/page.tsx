@@ -2,7 +2,7 @@ import { getProducts, getProductCategories } from '@/lib/services/products.servi
 import { ProductsWithFilter } from '@/components/public/products/ProductsWithFilter'
 import type { Metadata } from 'next'
 
-export const revalidate = 60
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'Продукция',

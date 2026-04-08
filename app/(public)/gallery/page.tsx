@@ -2,7 +2,7 @@ import { getGalleryItems, getGalleryCategories } from '@/lib/services/settings.s
 import { GalleryWithFilter } from '@/components/public/gallery/GalleryWithFilter'
 import type { Metadata } from 'next'
 
-export const revalidate = 300
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'Галерея',

@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import nextDynamic from 'next/dynamic'
 import { getHeroSlides, getCompanyInfo, getTeamPersons, getSiteSettings, getGalleryItems } from '@/lib/services/settings.service'
 import { getProducts } from '@/lib/services/products.service'

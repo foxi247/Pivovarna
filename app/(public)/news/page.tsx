@@ -2,7 +2,7 @@ import { getNewsArticles, getNewsCategories } from '@/lib/services/news.service'
 import { NewsCard } from '@/components/public/news/NewsCard'
 import type { Metadata } from 'next'
 
-export const revalidate = 60
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'Новости',

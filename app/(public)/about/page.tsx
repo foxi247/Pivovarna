@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import nextDynamic from 'next/dynamic'
 import { getCompanyInfo, getTeamPersons, getGalleryItems } from '@/lib/services/settings.service'
 import { prisma } from '@/lib/db'

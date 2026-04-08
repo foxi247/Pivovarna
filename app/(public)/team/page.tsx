@@ -1,7 +1,7 @@
 import { getTeamPersons } from '@/lib/services/settings.service'
 import type { Metadata } from 'next'
 
-export const revalidate = 3600
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'Наш технолог',
