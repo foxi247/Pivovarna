@@ -5,8 +5,6 @@ import { getCompanyInfo, getTeamPersons, getGalleryItems } from '@/lib/services/
 import { prisma } from '@/lib/db'
 import { EmployeesSection } from '@/components/public/sections/EmployeesSection'
 
-export const dynamic = 'force-dynamic'
-
 const AboutSection = nextDynamic(() => import('@/components/public/sections/AboutSection').then(m => ({ default: m.AboutSection })), { ssr: false })
 const TeamSection = nextDynamic(() => import('@/components/public/sections/TeamSection').then(m => ({ default: m.TeamSection })), { ssr: false })
 const GallerySection = nextDynamic(() => import('@/components/public/sections/GallerySection').then(m => ({ default: m.GallerySection })), { ssr: false })

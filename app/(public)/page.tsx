@@ -5,8 +5,6 @@ import { getHeroSlides, getCompanyInfo, getTeamPersons, getSiteSettings, getGall
 import { getProducts } from '@/lib/services/products.service'
 import { getNewsArticles } from '@/lib/services/news.service'
 
-export const dynamic = 'force-dynamic'
-
 const HeroSection = nextDynamic(() => import('@/components/public/sections/HeroSection').then(m => ({ default: m.HeroSection })), { ssr: false })
 const AboutSection = nextDynamic(() => import('@/components/public/sections/AboutSection').then(m => ({ default: m.AboutSection })), { ssr: false })
 const TeamSection = nextDynamic(() => import('@/components/public/sections/TeamSection').then(m => ({ default: m.TeamSection })), { ssr: false })
