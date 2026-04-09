@@ -22,7 +22,7 @@ export async function getLeads(filter: LeadsFilter = {}) {
     where.OR = [
       { name: { contains: search, mode: 'insensitive' } },
       { email: { contains: search, mode: 'insensitive' } },
-      { phone: { contains: search } },
+      { phone: { contains: search, mode: 'insensitive' } },
       { company: { contains: search, mode: 'insensitive' } },
     ]
   }
@@ -68,16 +68,25 @@ export async function createLead(data: {
   source?: string
   ipAddress?: string
 }) {
+  // Ищем первого активного администратора для записи в историю статусов
+  const systemUser = await prisma.user.findFirst({
+    where: { isActive: true, role: { in: ['SUPERADMIN', 'ADMIN'] } },
+    select: { id: true },
+    orderBy: { createdAt: 'asc' },
+  })
+
   return prisma.lead.create({
     data: {
       ...data,
-      statusHistory: {
-        create: {
-          toStatus: 'NEW',
-          changedById: await getSystemUserId(),
-          comment: 'Заявка создана',
+      ...(systemUser && {
+        statusHistory: {
+          create: {
+            toStatus: 'NEW',
+            changedById: systemUser.id,
+            comment: 'Заявка создана',
+          },
         },
-      },
+      }),
     },
   })
 }
@@ -88,6 +97,11 @@ export async function updateLeadStatus(
   userId: string,
   comment?: string
 ) {
+  const VALID_STATUSES: LeadStatus[] = ['NEW', 'IN_PROGRESS', 'CLOSED', 'SPAM']
+  if (!VALID_STATUSES.includes(toStatus)) {
+    throw new Error(`Недопустимый статус: ${toStatus}`)
+  }
+
   const lead = await prisma.lead.findUnique({ where: { id: leadId } })
   if (!lead) throw new Error('Заявка не найдена')
 
@@ -134,25 +148,15 @@ export async function getNewLeadsCount() {
 }
 
 export async function getLeadsStats() {
+  const todayStart = new Date()
+  todayStart.setHours(0, 0, 0, 0)
+
   const [total, newCount, inProgress, closed, todayCount] = await Promise.all([
     prisma.lead.count(),
     prisma.lead.count({ where: { status: 'NEW' } }),
     prisma.lead.count({ where: { status: 'IN_PROGRESS' } }),
     prisma.lead.count({ where: { status: 'CLOSED' } }),
-    prisma.lead.count({
-      where: {
-        createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
-      },
-    }),
+    prisma.lead.count({ where: { createdAt: { gte: todayStart } } }),
   ])
   return { total, newCount, inProgress, closed, todayCount }
-}
-
-// fallback: system user for automated records
-async function getSystemUserId() {
-  const user = await prisma.user.findFirst({
-    where: { role: 'SUPERADMIN' },
-    select: { id: true },
-  })
-  return user?.id ?? 'system'
 }

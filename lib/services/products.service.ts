@@ -29,9 +29,15 @@ export async function getProductBySlug(slug: string) {
 }
 
 export async function createProduct(data: ProductInput) {
-  const slug = data.slug || slugify(data.name)
+  const slug = data.slug?.trim() || slugify(data.name)
   return prisma.product.create({
-    data: { ...data, slug, alcoholContent: data.alcoholContent ?? undefined, bitterness: data.bitterness ?? undefined, density: data.density ?? undefined },
+    data: {
+      ...data,
+      slug,
+      alcoholContent: data.alcoholContent ?? null,
+      bitterness: data.bitterness ?? null,
+      density: data.density ?? null,
+    },
   })
 }
 
@@ -44,8 +50,11 @@ export async function deleteProduct(id: string) {
 }
 
 export async function updateProductsOrder(ids: string[]) {
-  await Promise.all(
-    ids.map((id, index) => prisma.product.update({ where: { id }, data: { sortOrder: index } }))
+  // Используем транзакцию для атомарности — либо все позиции обновлены, либо ни одной
+  await prisma.$transaction(
+    ids.map((id, index) =>
+      prisma.product.update({ where: { id }, data: { sortOrder: index } })
+    )
   )
 }
 

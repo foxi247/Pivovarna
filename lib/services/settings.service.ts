@@ -1,8 +1,7 @@
 import { prisma } from '@/lib/db'
 
 export async function getSiteSettings() {
-  const settings = await prisma.siteSettings.findFirst()
-  return settings
+  return prisma.siteSettings.findFirst()
 }
 
 export async function updateSiteSettings(data: {
@@ -59,7 +58,8 @@ export async function getHomeSections() {
 }
 
 export async function updateHomeSections(sections: { id: string; isVisible: boolean; sortOrder: number }[]) {
-  await Promise.all(
+  // Атомарное обновление всех секций
+  await prisma.$transaction(
     sections.map(({ id, isVisible, sortOrder }) =>
       prisma.homeSection.update({ where: { id }, data: { isVisible, sortOrder } })
     )
@@ -92,7 +92,7 @@ export async function updateCompanyInfo(data: {
 }) {
   const existing = await prisma.companyInfo.findFirst()
   if (existing) {
-    return prisma.companyInfo.update({ where: { id: existing.id }, data: data as any })
+    return prisma.companyInfo.update({ where: { id: existing.id }, data })
   }
   return prisma.companyInfo.create({
     data: {
@@ -100,7 +100,7 @@ export async function updateCompanyInfo(data: {
       productionText: '',
       philosophyText: '',
       ...data,
-    } as any,
+    },
   })
 }
 

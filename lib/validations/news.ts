@@ -8,7 +8,7 @@ export const newsArticleSchema = z.object({
   content: z.string().min(1, 'Введите текст статьи'),
   coverImageUrl: z.string().optional().nullable(),
   isPublished: z.boolean().default(false),
-  publishedAt: z.date().optional().nullable(),
+  publishedAt: z.string().optional().nullable(),
   seoTitle: z.string().optional().nullable(),
   seoDescription: z.string().optional().nullable(),
 })

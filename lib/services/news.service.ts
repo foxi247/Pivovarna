@@ -26,18 +26,52 @@ export async function getNewsCategories(activeOnly = true) {
   })
 }
 
+function parsePublishedAt(raw: string | null | undefined): Date | null {
+  if (!raw) return null
+  const d = new Date(raw)
+  return isNaN(d.getTime()) ? null : d
+}
+
 export async function createNewsArticle(data: NewsArticleInput) {
-  const slug = data.slug || slugify(data.title)
-  const publishedAt = data.isPublished ? (data.publishedAt ?? new Date()) : null
+  const slug = data.slug?.trim() || slugify(data.title)
+  const publishedAt = data.isPublished
+    ? (parsePublishedAt(data.publishedAt) ?? new Date())
+    : null
   return prisma.newsArticle.create({
-    data: { ...data, slug, publishedAt, categoryId: data.categoryId ?? undefined },
+    data: {
+      title: data.title,
+      slug,
+      categoryId: data.categoryId || null,
+      excerpt: data.excerpt || null,
+      content: data.content,
+      coverImageUrl: data.coverImageUrl || null,
+      isPublished: data.isPublished,
+      publishedAt,
+      seoTitle: data.seoTitle || null,
+      seoDescription: data.seoDescription || null,
+    },
   })
 }
 
 export async function updateNewsArticle(id: string, data: Partial<NewsArticleInput>) {
-  const parsedAt = data.publishedAt ? new Date(data.publishedAt as unknown as string) : null
-  const publishedAt = data.isPublished ? (parsedAt && !isNaN(parsedAt.getTime()) ? parsedAt : new Date()) : null
-  return prisma.newsArticle.update({ where: { id }, data: { ...data, publishedAt, categoryId: data.categoryId ?? undefined } })
+  const publishedAt = data.isPublished !== undefined
+    ? (data.isPublished ? (parsePublishedAt(data.publishedAt) ?? new Date()) : null)
+    : undefined
+  return prisma.newsArticle.update({
+    where: { id },
+    data: {
+      ...(data.title !== undefined && { title: data.title }),
+      ...(data.slug !== undefined && { slug: data.slug?.trim() || undefined }),
+      ...(data.categoryId !== undefined && { categoryId: data.categoryId || null }),
+      ...(data.excerpt !== undefined && { excerpt: data.excerpt || null }),
+      ...(data.content !== undefined && { content: data.content }),
+      ...(data.coverImageUrl !== undefined && { coverImageUrl: data.coverImageUrl || null }),
+      ...(data.isPublished !== undefined && { isPublished: data.isPublished }),
+      ...(publishedAt !== undefined && { publishedAt }),
+      ...(data.seoTitle !== undefined && { seoTitle: data.seoTitle || null }),
+      ...(data.seoDescription !== undefined && { seoDescription: data.seoDescription || null }),
+    },
+  })
 }
 
 export async function deleteNewsArticle(id: string) {
