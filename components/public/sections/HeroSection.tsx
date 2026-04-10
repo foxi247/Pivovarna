@@ -69,7 +69,7 @@ export function HeroSection({ slides: slidesProp, slide }: HeroSectionProps) {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background image */}
-      <AnimatePresence mode="cross">
+      <AnimatePresence mode="sync">
         {s.imageUrl ? (
           <motion.div
             key={`bg-${current}`}
