@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { MapPin, Phone, Mail, Clock } from 'lucide-react'
+import { MapPin, Phone, Mail, Clock, Send } from 'lucide-react'
 import { getSiteSettings } from '@/lib/services/settings.service'
 
 const footerLinks = [
@@ -23,6 +23,14 @@ export async function Footer() {
   const hours = settings?.workingHours ?? 'Пн–Пт: 9:00–18:00'
   const siteName = settings?.siteName ?? 'Дербентская пивоварня'
   const tagline = settings?.footerText ?? 'Премиальное пиво из сердца Дагестана. Традиции, качество и современные технологии пивоварения.'
+
+  const socials = [
+    settings?.socialVk && { href: settings.socialVk, label: 'ВКонтакте', icon: 'VK' },
+    settings?.socialTelegram && { href: settings.socialTelegram, label: 'Telegram', icon: 'TG' },
+    settings?.socialYoutube && { href: settings.socialYoutube, label: 'YouTube', icon: 'YT' },
+    settings?.socialInstagram && { href: settings.socialInstagram, label: 'Instagram', icon: 'IG' },
+    settings?.socialWhatsapp && { href: settings.socialWhatsapp, label: 'WhatsApp', icon: 'WA' },
+  ].filter(Boolean) as { href: string; label: string; icon: string }[]
 
   return (
     <footer className="bg-[#1A1712] border-t border-[#3D352B]">
@@ -106,7 +114,28 @@ export async function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 pt-6 border-t border-[#3D352B] flex flex-col sm:flex-row items-center justify-between gap-4">
+        {socials.length > 0 && (
+          <div className="mt-8 pt-6 border-t border-[#3D352B]">
+            <p className="text-[#F5EFE6] text-xs font-semibold uppercase tracking-widest mb-3">Мы в социальных сетях</p>
+            <div className="flex items-center gap-3 flex-wrap">
+              {socials.map(s => (
+                <a
+                  key={s.href}
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={s.label}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#2A231C] hover:bg-[#3D352B] text-[#C8873A] text-xs font-medium transition-colors"
+                >
+                  <Send size={12} />
+                  {s.label}
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="mt-8 pt-6 border-t border-[#3D352B] flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-[#4D4438] text-sm">
             © {new Date().getFullYear()} {siteName}. Все права защищены.
           </p>

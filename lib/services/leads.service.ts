@@ -97,11 +97,6 @@ export async function updateLeadStatus(
   userId: string,
   comment?: string
 ) {
-  const VALID_STATUSES: LeadStatus[] = ['NEW', 'IN_PROGRESS', 'CLOSED', 'SPAM']
-  if (!VALID_STATUSES.includes(toStatus)) {
-    throw new Error(`Недопустимый статус: ${toStatus}`)
-  }
-
   const lead = await prisma.lead.findUnique({ where: { id: leadId } })
   if (!lead) throw new Error('Заявка не найдена')
 

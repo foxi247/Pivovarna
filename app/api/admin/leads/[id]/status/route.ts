@@ -3,7 +3,7 @@ import { requireAuth } from '@/lib/api-auth'
 import { updateLeadStatus } from '@/lib/services/leads.service'
 import type { LeadStatus } from '@prisma/client'
 
-const VALID_STATUSES: LeadStatus[] = ['NEW', 'IN_PROGRESS', 'CLOSED', 'SPAM']
+const VALID_STATUSES: LeadStatus[] = ['NEW', 'IN_PROGRESS', 'WAITING', 'CLOSED', 'REJECTED']
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const { error, session } = await requireAuth(['SUPERADMIN', 'ADMIN', 'MANAGER'])
