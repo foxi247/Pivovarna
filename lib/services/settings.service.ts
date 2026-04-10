@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db'
+import type { Prisma } from '@prisma/client'
 
 export async function getSiteSettings() {
   return prisma.siteSettings.findFirst()
@@ -88,7 +89,7 @@ export async function updateCompanyInfo(data: {
   philosophyTitle?: string
   philosophyText?: string
   philosophyImageUrl?: string
-  stats?: Record<string, unknown>
+  stats?: Prisma.InputJsonValue
 }) {
   const existing = await prisma.companyInfo.findFirst()
   if (existing) {
