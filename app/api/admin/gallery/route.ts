@@ -70,11 +70,11 @@ export async function POST(req: NextRequest) {
         folder: 'gallery',
         uploadedById: session!.user.id,
       },
-    }).catch(() => {})
+    }).catch((e) => console.error('[ActivityLog]', e))
 
     prisma.activityLog.create({
       data: { userId: session!.user.id, action: 'UPLOAD_GALLERY_IMAGE', entity: 'GalleryItem', entityId: item.id },
-    }).catch(() => {})
+    }).catch((e) => console.error('[ActivityLog]', e))
 
     revalidatePath('/gallery')
     revalidatePath('/')

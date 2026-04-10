@@ -21,7 +21,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
     prisma.activityLog.create({
       data: { userId: session!.user.id, action: 'UPDATE_GALLERY_ITEM', entity: 'GalleryItem', entityId: params.id },
-    }).catch(() => {})
+    }).catch((e) => console.error('[ActivityLog]', e))
 
     revalidatePath('/gallery')
     return NextResponse.json({ success: true, item })
@@ -39,7 +39,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
 
     prisma.activityLog.create({
       data: { userId: session!.user.id, action: 'DELETE_GALLERY_ITEM', entity: 'GalleryItem', entityId: params.id },
-    }).catch(() => {})
+    }).catch((e) => console.error('[ActivityLog]', e))
 
     revalidatePath('/gallery')
     revalidatePath('/')

@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
 
     prisma.activityLog.create({
       data: { userId: session!.user.id, action: 'CREATE_HERO_SLIDE', entity: 'HeroSlide', entityId: slide.id },
-    }).catch(() => {})
+    }).catch((e) => console.error('[ActivityLog]', e))
 
     revalidatePath('/')
     return NextResponse.json({ success: true, slide }, { status: 201 })

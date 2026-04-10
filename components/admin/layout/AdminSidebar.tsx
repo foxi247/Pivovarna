@@ -7,7 +7,7 @@ import {
   LayoutDashboard, Globe, Info, Users, Package, Newspaper,
   Image, Phone, Search, Inbox, Settings, FileText, LogOut,
   ChevronDown, FolderOpen, BarChart2, Menu, X, ExternalLink,
-  GraduationCap, UserSquare2,
+  GraduationCap, UserSquare2, MapPin, LayoutTemplate,
 } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 import { useState } from 'react'
@@ -31,6 +31,7 @@ const siteItems: NavItem[] = [
   { href: '/admin/about', label: 'О компании', icon: Info },
   { href: '/admin/team', label: 'Технолог', icon: Users },
   { href: '/admin/employees', label: 'Сотрудники', icon: UserSquare2 },
+  { href: '/admin/tours', label: 'Экскурсии', icon: MapPin },
 ]
 
 const contentItems: NavItem[] = [
@@ -53,6 +54,7 @@ const contentItems: NavItem[] = [
     ],
   },
   { href: '/admin/gallery', label: 'Галерея', icon: Image },
+  { href: '/admin/pages', label: 'Произвольные страницы', icon: LayoutTemplate },
 ]
 
 const systemItems: NavItem[] = [

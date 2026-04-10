@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
 
     prisma.activityLog.create({
       data: { userId: session!.user.id, action: 'CREATE_PRODUCT_CATEGORY', entity: 'ProductCategory', entityId: category.id },
-    }).catch(() => {})
+    }).catch((e) => console.error('[ActivityLog]', e))
 
     revalidatePath('/products')
     revalidatePath('/admin/products')

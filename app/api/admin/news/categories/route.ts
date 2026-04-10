@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
 
     prisma.activityLog.create({
       data: { userId: session!.user.id, action: 'CREATE_NEWS_CATEGORY', entity: 'NewsCategory', entityId: category.id },
-    }).catch(() => {})
+    }).catch((e) => console.error('[ActivityLog]', e))
 
     revalidatePath('/news')
     return NextResponse.json({ success: true, category }, { status: 201 })

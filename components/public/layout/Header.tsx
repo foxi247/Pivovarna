@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Menu, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-const navLinks = [
+const STATIC_NAV = [
   { href: '/', label: 'Главная', exact: true },
   { href: '/about', label: 'О нас', exact: false },
   { href: '/products', label: 'Продукция', exact: false },
@@ -20,6 +20,7 @@ const navLinks = [
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [extraLinks, setExtraLinks] = useState<{ href: string; label: string; exact: boolean }[]>([])
   const pathname = usePathname()
 
   useEffect(() => {
@@ -27,6 +28,14 @@ export function Header() {
     window.addEventListener('scroll', handler, { passive: true })
     return () => window.removeEventListener('scroll', handler)
   }, [])
+
+  useEffect(() => {
+    fetch('/api/nav-pages').then(r => r.ok ? r.json() : []).then((pages: { slug: string; navLabel: string | null; title: string }[]) => {
+      setExtraLinks(pages.map(p => ({ href: `/${p.slug}`, label: p.navLabel || p.title, exact: false })))
+    }).catch(() => {})
+  }, [])
+
+  const navLinks = [...STATIC_NAV, ...extraLinks]
 
   function isActive(link: { href: string; exact: boolean }) {
     if (link.exact) return pathname === link.href

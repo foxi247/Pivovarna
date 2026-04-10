@@ -26,7 +26,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
     prisma.activityLog.create({
       data: { userId: session!.user.id, action: 'UPDATE_HERO_SLIDE', entity: 'HeroSlide', entityId: params.id },
-    }).catch(() => {})
+    }).catch((e) => console.error('[ActivityLog]', e))
 
     revalidatePath('/')
     return NextResponse.json({ success: true, slide })
@@ -44,7 +44,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
 
     prisma.activityLog.create({
       data: { userId: session!.user.id, action: 'DELETE_HERO_SLIDE', entity: 'HeroSlide', entityId: params.id },
-    }).catch(() => {})
+    }).catch((e) => console.error('[ActivityLog]', e))
 
     revalidatePath('/')
     return NextResponse.json({ success: true })

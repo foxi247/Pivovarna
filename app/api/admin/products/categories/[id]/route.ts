@@ -13,7 +13,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
     prisma.activityLog.create({
       data: { userId: session!.user.id, action: 'UPDATE_PRODUCT_CATEGORY', entity: 'ProductCategory', entityId: params.id },
-    }).catch(() => {})
+    }).catch((e) => console.error('[ActivityLog]', e))
 
     revalidatePath('/products')
     revalidatePath('/admin/products')
@@ -38,7 +38,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
 
     prisma.activityLog.create({
       data: { userId: session!.user.id, action: 'DELETE_PRODUCT_CATEGORY', entity: 'ProductCategory', entityId: params.id },
-    }).catch(() => {})
+    }).catch((e) => console.error('[ActivityLog]', e))
 
     revalidatePath('/products')
     return NextResponse.json({ success: true })

@@ -4,9 +4,9 @@ import { getLeads } from '@/lib/services/leads.service'
 import { prisma } from '@/lib/db'
 import Link from 'next/link'
 import { formatDateRelative, LEAD_TYPE_LABELS, LEAD_STATUS_LABELS, LEAD_STATUS_COLORS } from '@/lib/utils'
-import { Inbox, TrendingUp, CheckCircle, Clock, PlusCircle, ExternalLink } from 'lucide-react'
+import { Inbox, TrendingUp, CheckCircle, Clock, PlusCircle, ExternalLink, ShieldAlert } from 'lucide-react'
 
-export default async function AdminDashboard() {
+export default async function AdminDashboard({ searchParams }: { searchParams: { error?: string } }) {
   const session = await auth()
 
   let stats = { newCount: 0, todayCount: 0, inProgress: 0, closed: 0, total: 0 }
@@ -38,6 +38,14 @@ export default async function AdminDashboard() {
 
   return (
     <div className="p-8">
+      {/* Forbidden banner */}
+      {searchParams.error === 'forbidden' && (
+        <div className="mb-6 flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
+          <ShieldAlert size={18} className="flex-shrink-0" />
+          <span>У вас недостаточно прав для доступа к этому разделу.</span>
+        </div>
+      )}
+
       {/* Welcome */}
       <div className="mb-8">
         <h1 className="text-admin-text text-2xl font-semibold">

@@ -12,14 +12,14 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
 
     // Delete from Supabase Storage
     if (file.filename) {
-      await deleteImage(file.filename).catch(() => {})
+      await deleteImage(file.filename).catch((e) => console.error('[ActivityLog]', e))
     }
 
     await prisma.mediaFile.delete({ where: { id: params.id } })
 
     prisma.activityLog.create({
       data: { userId: session!.user.id, action: 'DELETE_MEDIA', entity: 'MediaFile', entityId: params.id },
-    }).catch(() => {})
+    }).catch((e) => console.error('[ActivityLog]', e))
 
     return NextResponse.json({ success: true })
   } catch (err) {

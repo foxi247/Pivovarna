@@ -71,6 +71,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             return null
           }
 
+          // Log login activity (fire and forget)
+          prisma.activityLog.create({
+            data: { userId: user.id, action: 'LOGIN', entity: 'User', entityId: user.id },
+          }).catch((e) => console.error('[ActivityLog] login:', e))
+
           return {
             id: user.id,
             email: user.email,
