@@ -47,7 +47,7 @@ async function storageUpload(buffer: Buffer, path: string, contentType: string):
         'Content-Type': contentType,
         'x-upsert': 'true',
       },
-      body: buffer,
+      body: new Uint8Array(buffer),
     }
   )
 
