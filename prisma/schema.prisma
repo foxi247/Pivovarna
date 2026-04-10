@@ -459,3 +459,37 @@ model Employee {
   @@index([isActive])
   @@map("employees")
 }
+
+// ============================================================
+// КОНТЕНТ СТРАНИЦ (гибкое хранилище для экскурсий, форм и т.д.)
+// ============================================================
+
+model PageContent {
+  id        String   @id @default(cuid())
+  key       String   @unique   // e.g. "tours", "cooperation", "form_config"
+  data      Json
+  updatedAt DateTime @updatedAt
+
+  @@map("page_contents")
+}
+
+// ============================================================
+// ПРОИЗВОЛЬНЫЕ СТРАНИЦЫ (создаются через CMS)
+// ============================================================
+
+model CustomPage {
+  id             String   @id @default(cuid())
+  title          String
+  slug           String   @unique
+  content        String   @db.Text
+  isPublished    Boolean  @default(false)
+  showInNav      Boolean  @default(false)
+  navLabel       String?
+  sortOrder      Int      @default(0)
+  seoTitle       String?
+  seoDescription String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("custom_pages")
+}
