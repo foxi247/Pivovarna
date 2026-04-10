@@ -4,15 +4,35 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { leadSchema, type LeadInput } from '@/lib/validations/lead'
+import { z } from 'zod'
 import { Loader2 } from 'lucide-react'
 import type { LeadType } from '@prisma/client'
+
+export interface FormFieldConfig {
+  visible: boolean
+  required: boolean
+  label?: string
+  placeholder?: string
+}
+
+export interface LeadFormConfig {
+  title?: string
+  subtitle?: string
+  buttonText?: string
+  fields?: {
+    phone?: FormFieldConfig
+    email?: FormFieldConfig
+    company?: FormFieldConfig
+    message?: FormFieldConfig
+  }
+}
 
 interface LeadFormProps {
   type: LeadType
   title?: string
   subtitle?: string
   source: string
+  config?: LeadFormConfig
 }
 
 const typeLabels: Record<LeadType, string> = {
@@ -24,16 +44,65 @@ const typeLabels: Record<LeadType, string> = {
   OTHER: 'Другое',
 }
 
-export function LeadForm({ type, title, subtitle, source }: LeadFormProps) {
+function buildSchema(cfg: LeadFormConfig['fields']) {
+  const phoneRequired = cfg?.phone?.required && cfg?.phone?.visible
+  const emailRequired = cfg?.email?.required && cfg?.email?.visible
+  const messageRequired = cfg?.message?.required !== false
+
+  return z.object({
+    type: z.enum(['COOPERATION', 'DISTRIBUTION', 'WHOLESALE', 'FEEDBACK', 'TOUR', 'OTHER']),
+    name: z.string().min(2, 'Введите ваше имя').max(100),
+    phone: phoneRequired
+      ? z.string().min(1, 'Укажите телефон')
+      : z.string().optional(),
+    email: emailRequired
+      ? z.string().email('Некорректный email')
+      : z.string().email('Некорректный email').optional().or(z.literal('')),
+    company: z.string().optional(),
+    message: messageRequired
+      ? z.string().min(10, 'Опишите ваш запрос').max(2000)
+      : z.string().optional(),
+    source: z.string().optional(),
+  }).refine(
+    (data) => {
+      const showPhone = cfg?.phone?.visible !== false
+      const showEmail = cfg?.email?.visible !== false
+      if (!showPhone && !showEmail) return true
+      return data.phone || data.email
+    },
+    { message: 'Укажите телефон или email для связи', path: ['phone'] }
+  )
+}
+
+type FormValues = {
+  type: LeadType
+  name: string
+  phone?: string
+  email?: string
+  company?: string
+  message?: string
+  source?: string
+}
+
+const inputCls = 'w-full bg-[#2E2820] border border-[#4D4438] rounded-lg px-4 py-3 text-[#F5EFE6] text-sm placeholder:text-[#4D4438] focus:outline-none focus:border-[#C8873A] transition-colors'
+
+export function LeadForm({ type, title: titleProp, subtitle: subtitleProp, source, config }: LeadFormProps) {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
 
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<LeadInput>({
-    resolver: zodResolver(leadSchema),
+  const fields = config?.fields ?? {}
+  const showPhone = fields.phone?.visible !== false
+  const showEmail = fields.email?.visible !== false
+  const showCompany = fields.company?.visible !== false
+  const showMessage = fields.message?.visible !== false
+
+  const schema = buildSchema(fields)
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<FormValues>({
+    resolver: zodResolver(schema),
     defaultValues: { type },
   })
 
-  const onSubmit = async (data: LeadInput) => {
+  const onSubmit = async (data: FormValues) => {
     setLoading(true)
     try {
       const res = await fetch('/api/leads', {
@@ -50,6 +119,10 @@ export function LeadForm({ type, title, subtitle, source }: LeadFormProps) {
       setLoading(false)
     }
   }
+
+  const title = config?.title || titleProp
+  const subtitle = config?.subtitle || subtitleProp
+  const buttonText = config?.buttonText || 'Отправить заявку'
 
   if (success) {
     return (
@@ -80,58 +153,74 @@ export function LeadForm({ type, title, subtitle, source }: LeadFormProps) {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <input type="hidden" {...register('type')} value={type} />
 
-        <div className="grid sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-[#B8A898] text-sm mb-2">Ваше имя *</label>
-            <input
-              {...register('name')}
-              placeholder="Иван Иванов"
-              className="w-full bg-[#2E2820] border border-[#4D4438] rounded-lg px-4 py-3 text-[#F5EFE6] text-sm placeholder:text-[#4D4438] focus:outline-none focus:border-[#C8873A] transition-colors"
-            />
-            {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name.message}</p>}
-          </div>
-
-          <div>
-            <label className="block text-[#B8A898] text-sm mb-2">Компания</label>
-            <input
-              {...register('company')}
-              placeholder="ООО «Название»"
-              className="w-full bg-[#2E2820] border border-[#4D4438] rounded-lg px-4 py-3 text-[#F5EFE6] text-sm placeholder:text-[#4D4438] focus:outline-none focus:border-[#C8873A] transition-colors"
-            />
-          </div>
+        {/* Name — always shown */}
+        <div>
+          <label className="block text-[#B8A898] text-sm mb-2">Ваше имя *</label>
+          <input {...register('name')} placeholder="Иван Иванов" className={inputCls} />
+          {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name.message}</p>}
         </div>
 
-        <div className="grid sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-[#B8A898] text-sm mb-2">Телефон</label>
-            <input
-              {...register('phone')}
-              placeholder="+7 (XXX) XXX-XX-XX"
-              className="w-full bg-[#2E2820] border border-[#4D4438] rounded-lg px-4 py-3 text-[#F5EFE6] text-sm placeholder:text-[#4D4438] focus:outline-none focus:border-[#C8873A] transition-colors"
-            />
+        {/* Phone + Email row */}
+        {(showPhone || showEmail) && (
+          <div className={`grid gap-4 ${showPhone && showEmail ? 'sm:grid-cols-2' : ''}`}>
+            {showPhone && (
+              <div>
+                <label className="block text-[#B8A898] text-sm mb-2">
+                  {fields.phone?.label || 'Телефон'}{fields.phone?.required ? ' *' : ''}
+                </label>
+                <input
+                  {...register('phone')}
+                  placeholder={fields.phone?.placeholder || '+7 (XXX) XXX-XX-XX'}
+                  className={inputCls}
+                />
+              </div>
+            )}
+            {showEmail && (
+              <div>
+                <label className="block text-[#B8A898] text-sm mb-2">
+                  {fields.email?.label || 'Email'}{fields.email?.required ? ' *' : ''}
+                </label>
+                <input
+                  {...register('email')}
+                  type="email"
+                  placeholder={fields.email?.placeholder || 'email@company.ru'}
+                  className={inputCls}
+                />
+              </div>
+            )}
           </div>
-          <div>
-            <label className="block text-[#B8A898] text-sm mb-2">Email</label>
-            <input
-              {...register('email')}
-              type="email"
-              placeholder="email@company.ru"
-              className="w-full bg-[#2E2820] border border-[#4D4438] rounded-lg px-4 py-3 text-[#F5EFE6] text-sm placeholder:text-[#4D4438] focus:outline-none focus:border-[#C8873A] transition-colors"
-            />
-          </div>
-        </div>
+        )}
         {errors.phone && <p className="text-red-400 text-xs -mt-3">{errors.phone.message}</p>}
 
-        <div>
-          <label className="block text-[#B8A898] text-sm mb-2">Сообщение *</label>
-          <textarea
-            {...register('message')}
-            rows={5}
-            placeholder="Опишите ваш запрос подробнее..."
-            className="w-full bg-[#2E2820] border border-[#4D4438] rounded-lg px-4 py-3 text-[#F5EFE6] text-sm placeholder:text-[#4D4438] focus:outline-none focus:border-[#C8873A] transition-colors resize-none"
-          />
-          {errors.message && <p className="text-red-400 text-xs mt-1">{errors.message.message}</p>}
-        </div>
+        {/* Company */}
+        {showCompany && (
+          <div>
+            <label className="block text-[#B8A898] text-sm mb-2">
+              {fields.company?.label || 'Компания'}{fields.company?.required ? ' *' : ''}
+            </label>
+            <input
+              {...register('company')}
+              placeholder={fields.company?.placeholder || 'ООО «Название»'}
+              className={inputCls}
+            />
+          </div>
+        )}
+
+        {/* Message */}
+        {showMessage && (
+          <div>
+            <label className="block text-[#B8A898] text-sm mb-2">
+              {fields.message?.label || 'Сообщение'}{fields.message?.required !== false ? ' *' : ''}
+            </label>
+            <textarea
+              {...register('message')}
+              rows={5}
+              placeholder={fields.message?.placeholder || 'Опишите ваш запрос подробнее...'}
+              className={`${inputCls} resize-none`}
+            />
+            {errors.message && <p className="text-red-400 text-xs mt-1">{errors.message.message}</p>}
+          </div>
+        )}
 
         <button
           type="submit"
@@ -139,7 +228,7 @@ export function LeadForm({ type, title, subtitle, source }: LeadFormProps) {
           className="w-full py-3.5 bg-[#C8873A] hover:bg-[#E8A855] disabled:opacity-50 text-[#0F0D0A] font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 text-base"
         >
           {loading && <Loader2 size={18} className="animate-spin" />}
-          {loading ? 'Отправка...' : 'Отправить заявку'}
+          {loading ? 'Отправка...' : buttonText}
         </button>
 
         <p className="text-[#4D4438] text-xs text-center">

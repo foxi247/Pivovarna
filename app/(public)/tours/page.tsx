@@ -1,4 +1,5 @@
 import { LeadForm } from '@/components/public/forms/LeadForm'
+import type { LeadFormConfig } from '@/components/public/forms/LeadForm'
 import { prisma } from '@/lib/db'
 import type { Metadata } from 'next'
 
@@ -20,6 +21,7 @@ interface ToursData {
   subheading?: string
   intro?: string
   features?: { title: string; desc: string }[]
+  form?: LeadFormConfig
 }
 
 export default async function ToursPage() {
@@ -60,8 +62,9 @@ export default async function ToursPage() {
             <LeadForm
               type="TOUR"
               source="website_tours_page"
-              title="Записаться на экскурсию"
-              subtitle="Укажите предпочтительную дату и количество участников в сообщении"
+              title={cms.form?.title || 'Записаться на экскурсию'}
+              subtitle={cms.form?.subtitle || 'Укажите предпочтительную дату и количество участников в сообщении'}
+              config={cms.form}
             />
           </div>
         </div>

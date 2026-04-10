@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import { Plus, Edit2, Trash2, Eye, EyeOff, X, Check, GripVertical, ChevronUp, ChevronDown } from 'lucide-react'
+import { Plus, Edit2, Trash2, Eye, EyeOff, X, Check, GripVertical, ChevronUp, ChevronDown, Upload } from 'lucide-react'
 
 interface HeroSlide {
   id: string
@@ -62,8 +62,26 @@ export default function AdminHomepagePage() {
 
   // Delete confirm
   const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [uploading, setUploading] = useState(false)
 
   const toastTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  async function uploadSlideImage(file: File) {
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('folder', 'hero')
+      const res = await fetch('/api/upload', { method: 'POST', body: formData })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Ошибка загрузки')
+      setSlideForm(f => f && ({ ...f, imageUrl: data.url }))
+    } catch (e) {
+      setSlideError(e instanceof Error ? e.message : 'Ошибка загрузки')
+    } finally {
+      setUploading(false)
+    }
+  }
 
   function showToast(msg: string, ok = true) {
     setToast({ msg, ok })
@@ -281,13 +299,23 @@ export default function AdminHomepagePage() {
                 />
               </div>
               <div>
-                <label className="block text-admin-text-muted text-xs mb-1">URL изображения *</label>
-                <input
-                  value={slideForm.imageUrl}
-                  onChange={e => setSlideForm(f => f && ({ ...f, imageUrl: e.target.value }))}
-                  className="w-full border border-admin-border rounded-lg px-3 py-2 text-admin-text text-sm focus:outline-none focus:ring-2 focus:ring-stone-300"
-                  placeholder="https://..."
-                />
+                <label className="block text-admin-text-muted text-xs mb-1">Изображение *</label>
+                <div className="flex gap-2">
+                  <input
+                    value={slideForm.imageUrl}
+                    onChange={e => setSlideForm(f => f && ({ ...f, imageUrl: e.target.value }))}
+                    className="flex-1 border border-admin-border rounded-lg px-3 py-2 text-admin-text text-sm focus:outline-none focus:ring-2 focus:ring-stone-300"
+                    placeholder="https://... или загрузить файл →"
+                  />
+                  <label className={`flex items-center gap-1.5 px-3 py-2 border border-admin-border rounded-lg text-sm text-admin-text-muted hover:bg-stone-50 cursor-pointer transition-colors flex-shrink-0 ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                    <Upload size={14} />
+                    {uploading ? '...' : 'Файл'}
+                    <input type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) uploadSlideImage(f) }} />
+                  </label>
+                </div>
+                {slideForm.imageUrl && (
+                  <img src={slideForm.imageUrl} alt="" className="mt-2 h-20 w-full object-cover rounded-lg border border-admin-border" />
+                )}
               </div>
               <div>
                 <label className="block text-admin-text-muted text-xs mb-1">Описание</label>
@@ -424,7 +452,24 @@ export default function AdminHomepagePage() {
         <h2 className="text-admin-text font-semibold text-lg mb-4">Порядок и видимость секций</h2>
         <div className="bg-white border border-admin-border rounded-xl overflow-hidden">
           {sections.length === 0 ? (
-            <p className="text-center py-8 text-admin-text-muted text-sm">Секции не загружены. Возможно, нужно выполнить первичную инициализацию БД.</p>
+            <div className="text-center py-10">
+              <p className="text-admin-text-muted text-sm mb-4">Секции не инициализированы. Нажмите кнопку для создания записей.</p>
+              <button
+                onClick={async () => {
+                  const res = await fetch('/api/admin/home-sections/init', { method: 'POST' })
+                  if (res.ok) {
+                    const data = await res.json()
+                    setSections(data.sections)
+                    showToast('Секции инициализированы')
+                  } else {
+                    showToast('Ошибка инициализации', false)
+                  }
+                }}
+                className="px-4 py-2 bg-stone-900 text-white rounded-lg text-sm hover:bg-stone-800 transition-colors"
+              >
+                Инициализировать секции
+              </button>
+            </div>
           ) : (
             sections.map((section, index) => (
               <div key={section.id} className="flex items-center justify-between px-5 py-3.5 border-b border-admin-border last:border-0">

@@ -27,7 +27,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <HeroSection slide={heroSlides?.[0] || null} />
+      <HeroSection slides={heroSlides || []} />
       <AboutSection info={companyInfo} />
       {teamPersons?.[0] && <TeamSection person={teamPersons[0]} />}
       <ProductsSection products={products || []} />

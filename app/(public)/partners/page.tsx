@@ -1,12 +1,19 @@
 import { LeadForm } from '@/components/public/forms/LeadForm'
+import type { LeadFormConfig } from '@/components/public/forms/LeadForm'
+import { prisma } from '@/lib/db'
 import type { Metadata } from 'next'
+
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'Партнёрам',
   description: 'Стать дистрибьютором Дербентской пивоварни. Условия оптовых поставок.',
 }
 
-export default function PartnersPage() {
+export default async function PartnersPage() {
+  const record = await prisma.pageContent.findUnique({ where: { key: 'form_partners' } }).catch(() => null)
+  const formCfg = (record?.data ?? {}) as LeadFormConfig
+
   return (
     <div className="min-h-screen pt-24 pb-20">
       <div className="max-w-6xl mx-auto px-6 lg:px-12">
@@ -42,8 +49,9 @@ export default function PartnersPage() {
             <LeadForm
               type="DISTRIBUTION"
               source="website_partners_page"
-              title="Стать дистрибьютором"
-              subtitle="Заполните форму — наш менеджер свяжется с вами для обсуждения условий"
+              title={formCfg.title || 'Стать дистрибьютором'}
+              subtitle={formCfg.subtitle || 'Заполните форму — наш менеджер свяжется с вами для обсуждения условий'}
+              config={formCfg}
             />
           </div>
         </div>

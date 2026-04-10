@@ -8,19 +8,20 @@ import { Menu, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const STATIC_NAV = [
-  { href: '/', label: 'Главная', exact: true },
-  { href: '/about', label: 'О нас', exact: false },
-  { href: '/products', label: 'Продукция', exact: false },
-  { href: '/news', label: 'Новости', exact: false },
-  { href: '/gallery', label: 'Галерея', exact: false },
-  { href: '/tours', label: 'Экскурсии', exact: false },
-  { href: '/contacts', label: 'Контакты', exact: false },
+  { key: 'home', href: '/', label: 'Главная', exact: true },
+  { key: 'about', href: '/about', label: 'О нас', exact: false },
+  { key: 'products', href: '/products', label: 'Продукция', exact: false },
+  { key: 'news', href: '/news', label: 'Новости', exact: false },
+  { key: 'gallery', href: '/gallery', label: 'Галерея', exact: false },
+  { key: 'tours', href: '/tours', label: 'Экскурсии', exact: false },
+  { key: 'contacts', href: '/contacts', label: 'Контакты', exact: false },
 ]
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [extraLinks, setExtraLinks] = useState<{ href: string; label: string; exact: boolean }[]>([])
+  const [hiddenKeys, setHiddenKeys] = useState<string[]>([])
   const pathname = usePathname()
 
   useEffect(() => {
@@ -30,12 +31,22 @@ export function Header() {
   }, [])
 
   useEffect(() => {
-    fetch('/api/nav-pages').then(r => r.ok ? r.json() : []).then((pages: { slug: string; navLabel: string | null; title: string }[]) => {
-      setExtraLinks(pages.map(p => ({ href: `/${p.slug}`, label: p.navLabel || p.title, exact: false })))
+    Promise.all([
+      fetch('/api/nav-pages').then(r => r.ok ? r.json() : []),
+      fetch('/api/nav-config').then(r => r.ok ? r.json() : null),
+    ]).then(([pages, config]) => {
+      const hidden: string[] = config?.hidden ?? []
+      const customHidden: string[] = config?.customHidden ?? []
+      setExtraLinks(
+        (pages as { slug: string; navLabel: string | null; title: string; id: string }[])
+          .filter(p => !customHidden.includes(p.id))
+          .map(p => ({ href: `/${p.slug}`, label: p.navLabel || p.title, exact: false }))
+      )
+      setHiddenKeys(hidden)
     }).catch(() => {})
   }, [])
 
-  const navLinks = [...STATIC_NAV, ...extraLinks]
+  const navLinks = STATIC_NAV.filter(l => !hiddenKeys.includes(l.key)).concat(extraLinks)
 
   function isActive(link: { href: string; exact: boolean }) {
     if (link.exact) return pathname === link.href
@@ -99,12 +110,14 @@ export function Header() {
 
           {/* CTA + mobile toggle */}
           <div className="flex items-center gap-4">
-            <Link
-              href="/cooperation"
-              className="hidden lg:inline-flex items-center px-5 py-2.5 bg-[#C8873A] hover:bg-[#E8A855] text-[#0F0D0A] text-sm font-semibold rounded-md transition-all duration-200 hover:-translate-y-0.5"
-            >
-              Сотрудничество
-            </Link>
+            {!hiddenKeys.includes('cooperation') && (
+              <Link
+                href="/cooperation"
+                className="hidden lg:inline-flex items-center px-5 py-2.5 bg-[#C8873A] hover:bg-[#E8A855] text-[#0F0D0A] text-sm font-semibold rounded-md transition-all duration-200 hover:-translate-y-0.5"
+              >
+                Сотрудничество
+              </Link>
+            )}
             <button
               className="lg:hidden text-[#B8A898] hover:text-[#F5EFE6] transition-colors"
               onClick={() => setMobileOpen(!mobileOpen)}

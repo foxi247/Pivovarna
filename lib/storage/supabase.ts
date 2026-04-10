@@ -33,6 +33,18 @@ function publicUrl(path: string): string {
   return `${SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${path}`
 }
 
+async function ensureBucket(): Promise<void> {
+  // Try to create the bucket — idempotent, fails silently if already exists
+  await fetch(`${SUPABASE_URL}/storage/v1/bucket`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${SERVICE_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ id: STORAGE_BUCKET, name: STORAGE_BUCKET, public: true }),
+  }).catch(() => {})
+}
+
 async function storageUpload(buffer: Buffer, path: string, contentType: string): Promise<void> {
   if (!SUPABASE_URL || !SERVICE_KEY) {
     throw new Error('NEXT_PUBLIC_SUPABASE_URL или SUPABASE_SERVICE_ROLE_KEY не заданы')
@@ -53,6 +65,29 @@ async function storageUpload(buffer: Buffer, path: string, contentType: string):
 
   if (!res.ok) {
     const text = await res.text().catch(() => res.status.toString())
+    // If bucket not found, try to create it and retry once
+    if (res.status === 400 && text.includes('Bucket not found')) {
+      await ensureBucket()
+      const retry = await fetch(
+        `${SUPABASE_URL}/storage/v1/object/${STORAGE_BUCKET}/${path}`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${SERVICE_KEY}`,
+            'Content-Type': contentType,
+            'x-upsert': 'true',
+          },
+          body: new Uint8Array(buffer),
+        }
+      )
+      if (!retry.ok) {
+        const retryText = await retry.text().catch(() => retry.status.toString())
+        throw new Error(
+          `Storage upload failed. Bucket "${STORAGE_BUCKET}" not found — создайте его в Supabase Dashboard → Storage → New bucket (name: "${STORAGE_BUCKET}", Public: ON). Ошибка: ${retryText}`
+        )
+      }
+      return
+    }
     throw new Error(`Storage upload error ${res.status}: ${text}`)
   }
 }
