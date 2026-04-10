@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { Loader2, Save, Trash2 } from 'lucide-react'
 import { productSchema, type ProductInput } from '@/lib/validations/product'
+import { ImageUpload } from '@/components/admin/ui/ImageUpload'
 import type { Product, ProductCategory } from '@prisma/client'
 
 interface ProductFormProps {
@@ -117,8 +118,13 @@ export function ProductForm({ product, categories }: ProductFormProps) {
         </div>
 
         <div>
-          <label className="block text-admin-text text-sm font-medium mb-1.5">URL изображения</label>
-          <input {...register('imageUrl')} className={inputCls} placeholder="https://res.cloudinary.com/..." />
+          <ImageUpload
+            value={watch('imageUrl') ?? ''}
+            onChange={(url) => setValue('imageUrl', url)}
+            folder="products"
+            label="Изображение продукта"
+            aspectRatio="wide"
+          />
         </div>
       </div>
 

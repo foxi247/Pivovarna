@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { requireAuth } from '@/lib/api-auth'
-import { uploadImage } from '@/lib/storage/cloudinary'
+import { uploadImage } from '@/lib/storage/supabase'
 import { prisma } from '@/lib/db'
 
 export async function GET() {

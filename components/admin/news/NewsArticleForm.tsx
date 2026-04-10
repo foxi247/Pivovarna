@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { Loader2, Save, Trash2, Eye } from 'lucide-react'
+import { ImageUpload } from '@/components/admin/ui/ImageUpload'
 import type { NewsArticle, NewsCategory } from '@prisma/client'
 
 interface NewsArticleFormProps {
@@ -17,7 +18,7 @@ export function NewsArticleForm({ article, categories }: NewsArticleFormProps) {
   const [loading, setLoading] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
-  const { register, handleSubmit, watch, formState: { errors } } = useForm({
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
     defaultValues: {
       title: article?.title ?? '',
       slug: article?.slug ?? '',
@@ -101,8 +102,13 @@ export function NewsArticleForm({ article, categories }: NewsArticleFormProps) {
         </div>
 
         <div>
-          <label className="block text-admin-text text-sm font-medium mb-1.5">URL обложки</label>
-          <input {...register('coverImageUrl')} className={inputCls} placeholder="https://..." />
+          <ImageUpload
+            value={(watch('coverImageUrl') as string) ?? ''}
+            onChange={(url) => setValue('coverImageUrl', url)}
+            folder="news"
+            label="Обложка статьи"
+            aspectRatio="video"
+          />
         </div>
 
         <div>

@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { uploadImage } from '@/lib/storage/cloudinary'
+import { uploadImage } from '@/lib/storage/supabase'
 import { prisma } from '@/lib/db'
+
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+const MAX_SIZE = 10 * 1024 * 1024 // 10 MB
 
 export async function POST(req: NextRequest) {
   const session = await auth()
@@ -14,18 +17,12 @@ export async function POST(req: NextRequest) {
     const file = formData.get('file') as File | null
     const folder = (formData.get('folder') as string) || 'uploads'
 
-    if (!file) {
-      return NextResponse.json({ error: 'Файл не найден' }, { status: 400 })
+    if (!file) return NextResponse.json({ error: 'Файл не найден' }, { status: 400 })
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      return NextResponse.json({ error: 'Неподдерживаемый формат. Разрешены: JPG, PNG, WEBP, GIF' }, { status: 400 })
     }
-
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
-    if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json({ error: 'Неподдерживаемый формат файла' }, { status: 400 })
-    }
-
-    const maxSize = 10 * 1024 * 1024 // 10MB
-    if (file.size > maxSize) {
-      return NextResponse.json({ error: 'Файл слишком большой (максимум 10MB)' }, { status: 400 })
+    if (file.size > MAX_SIZE) {
+      return NextResponse.json({ error: 'Файл слишком большой (максимум 10 МБ)' }, { status: 400 })
     }
 
     const buffer = Buffer.from(await file.arrayBuffer())
@@ -37,8 +34,8 @@ export async function POST(req: NextRequest) {
         originalName: file.name,
         url: result.url,
         thumbUrl: result.thumbUrl,
-        mimeType: file.type,
-        size: file.size,
+        mimeType: 'image/webp',
+        size: result.size,
         width: result.width,
         height: result.height,
         folder,
@@ -46,9 +43,15 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    return NextResponse.json({ success: true, url: result.url, thumbUrl: result.thumbUrl, id: media.id })
+    return NextResponse.json({
+      success: true,
+      url: result.url,
+      thumbUrl: result.thumbUrl,
+      id: media.id,
+    })
   } catch (error) {
     console.error('[POST /api/upload]', error)
-    return NextResponse.json({ error: 'Ошибка загрузки файла' }, { status: 500 })
+    const msg = error instanceof Error ? error.message : 'Ошибка загрузки файла'
+    return NextResponse.json({ error: msg }, { status: 500 })
   }
 }

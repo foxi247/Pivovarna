@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { Loader2, Save, Plus, Trash2 } from 'lucide-react'
+import { ImageUpload } from '@/components/admin/ui/ImageUpload'
 import type { TeamPerson } from '@prisma/client'
 
 interface TeamPersonFormProps {
@@ -16,7 +17,7 @@ export function TeamPersonForm({ person }: TeamPersonFormProps) {
     (person?.achievements as { title: string; year: string }[] | null) ?? []
   )
 
-  const { register, handleSubmit } = useForm({
+  const { register, handleSubmit, watch, setValue } = useForm({
     defaultValues: {
       name: person?.name ?? '',
       role: person?.role ?? 'Главный технолог',
@@ -78,8 +79,14 @@ export function TeamPersonForm({ person }: TeamPersonFormProps) {
         </div>
 
         <div>
-          <label className="block text-admin-text text-sm font-medium mb-1.5">URL фотографии</label>
-          <input {...register('photoUrl')} placeholder="https://..." className={inputCls} />
+          <ImageUpload
+            value={(watch('photoUrl') as string) ?? ''}
+            onChange={(url) => setValue('photoUrl', url)}
+            folder="team"
+            label="Фото технолога"
+            aspectRatio="square"
+            hint="Рекомендуется квадратное фото, минимум 400×400 px"
+          />
         </div>
 
         <div>
