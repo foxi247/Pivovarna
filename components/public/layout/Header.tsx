@@ -20,7 +20,7 @@ const STATIC_NAV = [
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [extraLinks, setExtraLinks] = useState<{ href: string; label: string; exact: boolean }[]>([])
+  const [extraLinks, setExtraLinks] = useState<{ key: string; href: string; label: string; exact: boolean }[]>([])
   const [hiddenKeys, setHiddenKeys] = useState<string[]>([])
   const pathname = usePathname()
 
@@ -40,7 +40,7 @@ export function Header() {
       setExtraLinks(
         (pages as { slug: string; navLabel: string | null; title: string; id: string }[])
           .filter(p => !customHidden.includes(p.id))
-          .map(p => ({ href: `/${p.slug}`, label: p.navLabel || p.title, exact: false }))
+          .map(p => ({ key: `custom_${p.id}`, href: `/${p.slug}`, label: p.navLabel || p.title, exact: false }))
       )
       setHiddenKeys(hidden)
     }).catch(() => {})
