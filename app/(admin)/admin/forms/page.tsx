@@ -54,10 +54,12 @@ function FormEditor({ formKey, label }: { formKey: string; label: string }) {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [saveError, setSaveError] = useState('')
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
     if (!open) return
+    setLoading(true)
     fetch(`/api/admin/page-content/${formKey}`)
       .then(r => r.json())
       .then(d => {
@@ -70,18 +72,22 @@ function FormEditor({ formKey, label }: { formKey: string; label: string }) {
   }, [open, formKey])
 
   async function save() {
-    setSaving(true); setSaved(false)
+    setSaving(true); setSaved(false); setSaveError('')
     try {
       const res = await fetch(`/api/admin/page-content/${formKey}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(cfg),
       })
-      if (!res.ok) throw new Error()
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(json.error || 'Ошибка сервера')
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
-    } catch { /* */ }
-    setSaving(false)
+    } catch (e: unknown) {
+      setSaveError(e instanceof Error ? e.message : 'Ошибка')
+    } finally {
+      setSaving(false)
+    }
   }
 
   function setFieldProp(key: string, prop: keyof FormFieldConfig, value: boolean | string) {
@@ -160,6 +166,7 @@ function FormEditor({ formKey, label }: { formKey: string; label: string }) {
                 </div>
               </div>
 
+              {saveError && <p className="text-red-500 text-sm">{saveError}</p>}
               <button onClick={save} disabled={saving}
                 className="flex items-center gap-2 bg-stone-900 hover:bg-stone-800 disabled:opacity-50 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors">
                 <Save size={14} />

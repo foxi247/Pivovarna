@@ -20,7 +20,7 @@ export async function GET() {
 //   { id, isVisible }  — toggle one section
 //   { sections: [{id, isVisible, sortOrder}] }  — batch reorder
 export async function PATCH(req: NextRequest) {
-  const { error } = await requireAuth(['SUPERADMIN', 'ADMIN'])
+  const { error } = await requireAuth(['SUPERADMIN', 'ADMIN', 'CONTENT_EDITOR', 'MANAGER'])
   if (error) return error
   try {
     const body = await req.json()

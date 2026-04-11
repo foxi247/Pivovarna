@@ -206,13 +206,23 @@ export default function AdminHomepagePage() {
     const updated = { ...section, isVisible: !section.isVisible }
     setSections(prev => prev.map(s => s.id === section.id ? updated : s))
     try {
-      await fetch('/api/admin/home-sections', {
+      const res = await fetch('/api/admin/home-sections', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: section.id, isVisible: updated.isVisible }),
       })
-      showToast(updated.isVisible ? 'Секция показана' : 'Секция скрыта')
-    } catch { /* */ }
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}))
+        // Revert optimistic update
+        setSections(prev => prev.map(s => s.id === section.id ? section : s))
+        showToast(d.error || 'Ошибка сохранения', false)
+      } else {
+        showToast(updated.isVisible ? 'Секция показана' : 'Секция скрыта')
+      }
+    } catch {
+      setSections(prev => prev.map(s => s.id === section.id ? section : s))
+      showToast('Ошибка сети', false)
+    }
   }
 
   function moveSectionUp(index: number) {
@@ -235,13 +245,20 @@ export default function AdminHomepagePage() {
 
   async function saveSectionsOrder(ordered: HomeSection[]) {
     try {
-      await fetch('/api/admin/home-sections', {
+      const res = await fetch('/api/admin/home-sections', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sections: ordered }),
       })
-      showToast('Порядок сохранён')
-    } catch { /* */ }
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}))
+        showToast(d.error || 'Ошибка сохранения', false)
+      } else {
+        showToast('Порядок сохранён')
+      }
+    } catch {
+      showToast('Ошибка сети', false)
+    }
   }
 
   return (
