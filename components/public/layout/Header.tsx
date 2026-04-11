@@ -32,13 +32,13 @@ export function Header() {
 
   useEffect(() => {
     Promise.all([
-      fetch('/api/nav-pages').then(r => r.ok ? r.json() : []),
-      fetch('/api/nav-config').then(r => r.ok ? r.json() : null),
+      fetch('/api/nav-pages', { cache: 'no-store' }).then(r => r.ok ? r.json() : []),
+      fetch('/api/nav-config', { cache: 'no-store' }).then(r => r.ok ? r.json() : null),
     ]).then(([pages, config]) => {
       const hidden: string[] = config?.hidden ?? []
       const customHidden: string[] = config?.customHidden ?? []
       setExtraLinks(
-        (pages as { slug: string; navLabel: string | null; title: string; id: string }[])
+        (pages as { id: string; slug: string; navLabel: string | null; title: string }[])
           .filter(p => !customHidden.includes(p.id))
           .map(p => ({ key: `custom_${p.id}`, href: `/${p.slug}`, label: p.navLabel || p.title, exact: false }))
       )

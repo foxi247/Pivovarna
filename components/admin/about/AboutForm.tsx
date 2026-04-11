@@ -3,7 +3,7 @@
 import { useForm } from 'react-hook-form'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { Loader2, Save, Plus, X } from 'lucide-react'
+import { Loader2, Save, Plus, X, Upload } from 'lucide-react'
 import type { CompanyInfo } from '@prisma/client'
 
 interface Stat { value: string; label: string }
@@ -24,9 +24,72 @@ function parseStats(raw: unknown): Stat[] {
   return DEFAULT_STATS
 }
 
+function ImageField({
+  label,
+  value,
+  onChange,
+  folder,
+}: {
+  label: string
+  value: string
+  onChange: (url: string) => void
+  folder: string
+}) {
+  const [uploading, setUploading] = useState(false)
+
+  async function handleFile(file: File) {
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('folder', folder)
+      const res = await fetch('/api/upload', { method: 'POST', body: formData })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Ошибка загрузки')
+      onChange(data.url)
+      toast.success('Фото загружено')
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Ошибка загрузки')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  return (
+    <div>
+      <label className="block text-admin-text text-sm font-medium mb-1.5">{label}</label>
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          placeholder="https://... или загрузите файл →"
+          className="flex-1 border border-admin-border rounded-lg px-3 py-2 text-admin-text text-sm focus:outline-none focus:ring-2 focus:ring-stone-300"
+        />
+        <label className={`flex items-center gap-1.5 px-3 py-2 border border-admin-border rounded-lg text-sm text-admin-text-muted hover:bg-stone-50 cursor-pointer transition-colors flex-shrink-0 ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
+          <Upload size={14} />
+          {uploading ? '...' : 'Файл'}
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f) }}
+          />
+        </label>
+      </div>
+      {value && (
+        <img src={value} alt="" className="mt-2 h-32 w-full object-cover rounded-lg border border-admin-border" />
+      )}
+    </div>
+  )
+}
+
 export function AboutForm({ info }: AboutFormProps) {
   const [loading, setLoading] = useState(false)
   const [stats, setStats] = useState<Stat[]>(parseStats(info?.stats))
+  const [historyImageUrl, setHistoryImageUrl] = useState(info?.historyImageUrl ?? '')
+  const [productionImageUrl, setProductionImageUrl] = useState(info?.productionImageUrl ?? '')
+  const [philosophyImageUrl, setPhilosophyImageUrl] = useState(info?.philosophyImageUrl ?? '')
 
   const { register, handleSubmit } = useForm({
     defaultValues: {
@@ -58,7 +121,7 @@ export function AboutForm({ info }: AboutFormProps) {
       const res = await fetch('/api/admin/about', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...data, stats }),
+        body: JSON.stringify({ ...data, stats, historyImageUrl, productionImageUrl, philosophyImageUrl }),
       })
       if (!res.ok) throw new Error()
       toast.success('Сохранено')
@@ -89,6 +152,7 @@ export function AboutForm({ info }: AboutFormProps) {
           <label className="block text-admin-text text-sm font-medium mb-1.5">Текст об истории</label>
           <textarea {...register('historyText')} rows={5} className="w-full border border-admin-border rounded-lg px-3 py-2.5 text-admin-text text-sm focus:outline-none focus:ring-2 focus:ring-stone-300 resize-none" />
         </div>
+        <ImageField label="Фото / изображение" value={historyImageUrl} onChange={setHistoryImageUrl} folder="about" />
       </div>
 
       <div className="bg-white border border-admin-border rounded-xl p-6 space-y-4">
@@ -101,6 +165,7 @@ export function AboutForm({ info }: AboutFormProps) {
           <label className="block text-admin-text text-sm font-medium mb-1.5">Текст</label>
           <textarea {...register('productionText')} rows={5} className="w-full border border-admin-border rounded-lg px-3 py-2.5 text-admin-text text-sm focus:outline-none focus:ring-2 focus:ring-stone-300 resize-none" />
         </div>
+        <ImageField label="Фото / изображение" value={productionImageUrl} onChange={setProductionImageUrl} folder="about" />
       </div>
 
       <div className="bg-white border border-admin-border rounded-xl p-6 space-y-4">
@@ -113,6 +178,7 @@ export function AboutForm({ info }: AboutFormProps) {
           <label className="block text-admin-text text-sm font-medium mb-1.5">Текст</label>
           <textarea {...register('philosophyText')} rows={5} className="w-full border border-admin-border rounded-lg px-3 py-2.5 text-admin-text text-sm focus:outline-none focus:ring-2 focus:ring-stone-300 resize-none" />
         </div>
+        <ImageField label="Фото / изображение" value={philosophyImageUrl} onChange={setPhilosophyImageUrl} folder="about" />
       </div>
 
       {/* Stats editor */}

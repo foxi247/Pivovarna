@@ -52,7 +52,8 @@ export default function AdminNavigationPage() {
       fetch('/api/admin/custom-pages').then(r => r.ok ? r.json() : []),
     ]).then(([navConfig, pages]) => {
       if (navConfig) setConfig(navConfig)
-      setCustomPages(pages.filter((p: CustomPage) => p.isPublished))
+      // Show all custom pages so admin can manage their nav visibility regardless of publish state
+      setCustomPages(pages)
     }).catch(() => {}).finally(() => setLoading(false))
   }, [])
 
@@ -160,19 +161,23 @@ export default function AdminNavigationPage() {
           </div>
           <div className="divide-y divide-admin-border">
             {customPages.map(page => {
-              const isVisible = page.showInNav && !config.customHidden.includes(page.id)
+              const canBeInNav = page.showInNav && page.isPublished
+              const isVisible = canBeInNav && !config.customHidden.includes(page.id)
               return (
                 <div key={page.id} className="flex items-center justify-between px-5 py-3.5">
                   <div>
                     <p className="text-admin-text text-sm font-medium">{page.navLabel || page.title}</p>
                     <p className="text-admin-text-muted text-xs">/{page.slug}</p>
-                    {!page.showInNav && (
-                      <p className="text-xs text-amber-600 mt-0.5">Не включена в навигацию (в настройках страницы)</p>
+                    {!page.isPublished && (
+                      <p className="text-xs text-amber-600 mt-0.5">Не опубликована — не будет показана в меню</p>
+                    )}
+                    {page.isPublished && !page.showInNav && (
+                      <p className="text-xs text-amber-600 mt-0.5">«Показывать в навигации» выключено в настройках страницы</p>
                     )}
                   </div>
                   <button
                     onClick={() => toggleCustom(page.id)}
-                    disabled={!page.showInNav}
+                    disabled={!canBeInNav}
                     className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
                       isVisible
                         ? 'bg-green-100 text-green-700 hover:bg-green-200'

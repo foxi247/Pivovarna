@@ -59,6 +59,19 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
   try {
     const page = await prisma.customPage.delete({ where: { id: params.id } })
 
+    // Clean up nav_config: remove deleted page's id from customHidden
+    try {
+      const navRecord = await prisma.pageContent.findUnique({ where: { key: 'nav_config' } })
+      if (navRecord?.data) {
+        const data = navRecord.data as { hidden?: string[]; customHidden?: string[] }
+        const customHidden = (data.customHidden ?? []).filter((id: string) => id !== params.id)
+        await prisma.pageContent.update({
+          where: { key: 'nav_config' },
+          data: { data: { ...data, customHidden } },
+        })
+      }
+    } catch { /* nav_config cleanup is best-effort */ }
+
     prisma.activityLog.create({
       data: { userId: session!.user.id, action: 'DELETE_CUSTOM_PAGE', entity: 'CustomPage', entityId: params.id },
     }).catch((e) => console.error('[ActivityLog]', e))
